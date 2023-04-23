@@ -1,3 +1,4 @@
-openpolicedata==0.5.1
+openpolicedata
 matplotlib
 pandas
+streamlit
