@@ -4,39 +4,24 @@ import pandas as pd
 import copy
 import openpolicedata as opd
 import io
-    
-class URLDataReader(io.BufferedReader):
-    def __init__(self, selected_rows):
-        self.selected_rows = selected_rows
 
-    def read(self, size: int = -1) -> bytes:
 
-        #TODO stop ignoring size
-        
-        selected_rows = self.selected_rows
-        if selected_rows is None:
-            return b''
-        
-        print(f'***source_name={selected_rows.iloc[0]["SourceName"]}, state={selected_rows.iloc[0]["State"]}')
-        src = opd.Source(source_name=selected_rows.iloc[0]["SourceName"], state=selected_rows.iloc[0]["State"])        
-        types = src.get_tables_types()
-        print(types)
-        years = src.get_years(table_type=types[0])
-        print(years)
-        print(f'***year={selected_rows.iloc[0]["Year"]}, table_type={selected_rows.iloc[0]["TableType"]}')
-        data_from_url = src.load_from_url(year=int(selected_rows.iloc[0]["Year"]), table_type=selected_rows.iloc[0]["TableType"]) 
- 
-        csv_text = data_from_url.table.to_csv(index=False)
-        return csv_text.encode('utf-8', 'surrogateescape')
+#create a global flag to say if should download or not  (default to false)  
 
-    def seek(self, offset: int, whence: int = io.SEEK_SET) -> int:
-        # Do nothing, since seeking is not supported for this reader
-        pass
+if 'show_download' not in st.session_state:    
+    print("Reset download flag")
+    st.session_state['show_download'] = False
+else:
+    print("SKIP reset download flag")
 
-   
-if 'selected_rows' not in st.session_state:    
+if 'data_from_url' not in st.session_state:    
+    st.session_state['data_from_url'] = None
+
+if 'selected_rows' not in st.session_state:  
     st.session_state['selected_rows'] = None
-
+else:
+    selected_rows=st.session_state['selected_rows']
+    
 @st.cache_data
 def get_data_catalog():
     df = opd.datasets.query()
@@ -47,25 +32,50 @@ def get_data_catalog():
 
 data_catalog = get_data_catalog()
 
-st.header('Selected dataset to download')
+st.header('Filtered dataset')
 expander_container = st.container()
 
-# Define the data as a dictionary
-data = {
-    'Name': ['Alice', 'Bob', 'Charlie', 'David'],
-    'Age': [25, 30, 35, 40],
-    'City': ['New York', 'San Francisco', 'Los Angeles', 'Chicago']
-}
 
 collect_help = "This collects the data from the data source such as a URL and will make it ready for download. This may take some time."
-if st.download_button('Download CSV', data=URLDataReader(st.session_state['selected_rows']) , file_name="selected_rows.csv", mime='text/csv'):
-    print('Download complete')
 
-show_all_datasets = st.checkbox('Show all datasets available')
+if st.session_state['show_download'] == True:
+    if st.download_button('Download CSV', data=st.session_state['csv_text_output'] , file_name="selected_rows.csv", mime='text/csv'):
+        st.session_state['show_download'] = False
+        print('Download complete!!!!!')
+        st.session_state['csv_text_output'] = None
+        st.experimental_rerun()
+ 
+else:
+    if st.button('Collect data', help=collect_help):
+        print(f'***source_name={selected_rows.iloc[0]["SourceName"]}, state={selected_rows.iloc[0]["State"]}')
+        src = opd.Source(source_name=selected_rows.iloc[0]["SourceName"], state=selected_rows.iloc[0]["State"])        
+        types = src.get_tables_types()
+        print(f"types = {types}")
+        years = src.get_years(table_type=types[0])
+        print(f"years = {years}")
+        print(f'***year={selected_rows.iloc[0]["Year"]}, table_type={selected_rows.iloc[0]["TableType"]}')
+        print("Downloading data from URL")
+        data_from_url = src.load_from_url(year=int(selected_rows.iloc[0]["Year"]), table_type=selected_rows.iloc[0]["TableType"]) 
+        print(f"Data downloaded from URL. Total of {len(data_from_url.table)} rows")
+        csv_text = data_from_url.table.to_csv(index=False)
+        csv_text_output = csv_text.encode('utf-8', 'surrogateescape')
+        st.session_state['data_from_url'] = data_from_url
+        st.session_state['csv_text_output'] = csv_text_output
+        st.dataframe(data=selected_rows)
+        st.session_state['show_download'] = True
+        print(f"csv_text_output len is {len(csv_text_output)}  type(csv_text_output) = {type(csv_text_output)}")
+        st.experimental_rerun()
+        
+# if (st.session_state['data_from_url'] is not None):
+#     st.dataframe(data=st.session_state['data_from_url'].table)
+    
+    
+show_all_datasets = False # st.checkbox('Show all datasets available')
 if show_all_datasets == True:
     st.dataframe(data=data_catalog)
 
 with st.sidebar:
+    st.header('Dataset Filters')
     selectbox_states = st.selectbox('States', pd.unique(
         data_catalog['State']), help='Select the states you want to download data for')
     if len(selectbox_states) == 0:
@@ -99,6 +109,7 @@ with st.sidebar:
     else:
         selected_rows = selected_rows[selected_rows['Year'].isin([selectbox_years])]
     st.session_state['selected_rows']=selected_rows
-
+print(f"selected_rows = {selected_rows}")
 with expander_container:
     st.dataframe(data=selected_rows)
+print(f"Done with rendering dataframe")
