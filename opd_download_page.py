@@ -19,8 +19,10 @@ if 'data_from_url' not in st.session_state:
 
 if 'selected_rows' not in st.session_state:  
     st.session_state['selected_rows'] = None
+    print(f"'selected_rows' NOT IN in st.session_state. st.session_state['selected_rows'] = {st.session_state['selected_rows']}")
 else:
     selected_rows=st.session_state['selected_rows']
+    print(f"'selected_rows' IN st.session_state. st.session_state['selected_rows'] = {st.session_state['selected_rows']}")
     
 @st.cache_data
 def get_data_catalog():
@@ -31,9 +33,61 @@ def get_data_catalog():
 
 
 data_catalog = get_data_catalog()
+st.title('Open Police Data')
+
 
 st.header('Filtered dataset')
 expander_container = st.container()
+
+
+
+with st.sidebar:
+    st.header('Dataset Filters')
+    selectbox_states = st.selectbox('States', pd.unique(
+        data_catalog['State']), help='Select the states you want to download data for')
+    print(f"selectbox_states = {selectbox_states}")
+    if len(selectbox_states) == 0:
+        selected_rows = copy.deepcopy(data_catalog)
+        print(f"selectbox_states == 0, selected_rows = {selected_rows}")
+    else:
+        selected_rows = data_catalog[data_catalog['State'].isin([selectbox_states])]
+        print(f"selectbox_states != 0, selected_rows = {selected_rows}")
+
+    selectbox_sources = st.selectbox('Available sources', pd.unique(
+        selected_rows['SourceName']), help='Select the sources')
+
+    if len(selectbox_sources) == 0:
+        selected_rows = copy.deepcopy(selected_rows)
+        print(f"selectbox_sources == 0, selected_rows = {selected_rows}")
+    else:        
+        selected_rows = selected_rows[selected_rows['SourceName'].isin(
+            [selectbox_sources])]
+        print(f"selectbox_sources != 0, selected_rows = {selected_rows}")
+
+    selectbox_table_types = st.selectbox('Available table types', pd.unique(
+        selected_rows['TableType']), help='Select the table type')
+
+    if len(selectbox_table_types) == 0:       
+        selected_rows = copy.deepcopy(selected_rows)
+        print(f"selectbox_table_types == 0, selected_rows = {selected_rows}")
+    else:
+        selected_rows = selected_rows[selected_rows['TableType'].isin(
+            [selectbox_table_types])]
+        print(f"selectbox_table_types != 0, selected_rows = {selected_rows}")
+
+    selectbox_years = st.selectbox('Available years', pd.unique(
+       selected_rows['Year']), help='Select the year')
+
+    if len(selectbox_years) == 0:
+        selected_rows = copy.deepcopy(selected_rows)
+        print(f"selectbox_years == 0, selected_rows = {selected_rows}")
+    else:
+        selected_rows = selected_rows[selected_rows['Year'].isin([selectbox_years])]
+        print(f"selectbox_years != 0, selected_rows = {selected_rows}")
+        
+    st.session_state['selected_rows']=selected_rows
+print(f"selected_rows = {selected_rows}")
+
 
 
 collect_help = "This collects the data from the data source such as a URL and will make it ready for download. This may take some time."
@@ -61,9 +115,11 @@ else:
         csv_text_output = csv_text.encode('utf-8', 'surrogateescape')
         st.session_state['data_from_url'] = data_from_url
         st.session_state['csv_text_output'] = csv_text_output
-        st.dataframe(data=selected_rows)
+        #st.dataframe(data=selected_rows)
         st.session_state['show_download'] = True
         print(f"csv_text_output len is {len(csv_text_output)}  type(csv_text_output) = {type(csv_text_output)}")
+        print(f"st.session_state['selected_rows'] = {st.session_state['selected_rows']}")
+        st.session_state['selected_rows']=selected_rows
         st.experimental_rerun()
         
 # if (st.session_state['data_from_url'] is not None):
@@ -73,43 +129,8 @@ else:
 show_all_datasets = False # st.checkbox('Show all datasets available')
 if show_all_datasets == True:
     st.dataframe(data=data_catalog)
-
-with st.sidebar:
-    st.header('Dataset Filters')
-    selectbox_states = st.selectbox('States', pd.unique(
-        data_catalog['State']), help='Select the states you want to download data for')
-    if len(selectbox_states) == 0:
-        selected_rows = copy.deepcopy(data_catalog)
-    else:
-        selected_rows = data_catalog[data_catalog['State'].isin([selectbox_states])]
-
-    selectbox_sources = st.selectbox('Available sources', pd.unique(
-        pd.unique(selected_rows['SourceName'])), help='Select the sources')
-
-    if len(selectbox_sources) == 0:
-        selected_rows = copy.deepcopy(selected_rows)
-    else:        
-        selected_rows = selected_rows[selected_rows['SourceName'].isin(
-            [selectbox_sources])]
-
-    selectbox_table_types = st.selectbox('Available table types', pd.unique(
-        pd.unique(selected_rows['TableType'])), help='Select the table type')
-
-    if len(selectbox_table_types) == 0:       
-        selected_rows = copy.deepcopy(selected_rows)
-    else:
-        selected_rows = selected_rows[selected_rows['TableType'].isin(
-            [selectbox_table_types])]
-
-    selectbox_years = st.selectbox('Available years', pd.unique(
-        pd.unique(selected_rows['Year'])), help='Select the year')
-
-    if len(selectbox_years) == 0:
-        selected_rows = copy.deepcopy(selected_rows)
-    else:
-        selected_rows = selected_rows[selected_rows['Year'].isin([selectbox_years])]
-    st.session_state['selected_rows']=selected_rows
-print(f"selected_rows = {selected_rows}")
+    
 with expander_container:
     st.dataframe(data=selected_rows)
+
 print(f"Done with rendering dataframe")
