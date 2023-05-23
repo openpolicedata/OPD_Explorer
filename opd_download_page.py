@@ -1,9 +1,7 @@
 import streamlit as st
-import matplotlib.pyplot as plt
 import pandas as pd
-import copy
+
 import openpolicedata as opd
-import io
 
 
 #create a global flag to say if should download or not  (default to false)  
@@ -40,35 +38,32 @@ st.header('Filtered dataset')
 expander_container = st.container()
 
 
-
 with st.sidebar:
     st.header('Dataset Filters')
-    selectbox_states = st.selectbox('States', pd.unique(
-        data_catalog['State']), help='Select the states you want to download data for')
+    selectbox_states = st.selectbox('States', data_catalog['State'].unique(), 
+                                    help='Select the states you want to download data for')
     print(f"selectbox_states = {selectbox_states}")
     if len(selectbox_states) == 0:
-        selected_rows = copy.deepcopy(data_catalog)
+        selected_rows = data_catalog.copy()
         print(f"selectbox_states == 0, selected_rows = {selected_rows}")
     else:
         selected_rows = data_catalog[data_catalog['State'].isin([selectbox_states])]
         print(f"selectbox_states != 0, selected_rows = {selected_rows}")
 
-    selectbox_sources = st.selectbox('Available sources', pd.unique(
-        selected_rows['SourceName']), help='Select the sources')
+    selectbox_sources = st.selectbox('Available sources', selected_rows['SourceName'].unique(), 
+                                     help='Select the sources')
 
     if len(selectbox_sources) == 0:
-        selected_rows = copy.deepcopy(selected_rows)
         print(f"selectbox_sources == 0, selected_rows = {selected_rows}")
     else:        
         selected_rows = selected_rows[selected_rows['SourceName'].isin(
             [selectbox_sources])]
         print(f"selectbox_sources != 0, selected_rows = {selected_rows}")
 
-    selectbox_table_types = st.selectbox('Available table types', pd.unique(
-        selected_rows['TableType']), help='Select the table type')
+    selectbox_table_types = st.selectbox('Available table types', selected_rows['TableType'].unique(), 
+                                         help='Select the table type')
 
     if len(selectbox_table_types) == 0:       
-        selected_rows = copy.deepcopy(selected_rows)
         print(f"selectbox_table_types == 0, selected_rows = {selected_rows}")
     else:
         selected_rows = selected_rows[selected_rows['TableType'].isin(
@@ -79,7 +74,6 @@ with st.sidebar:
        selected_rows['Year']), help='Select the year')
 
     if len(selectbox_years) == 0:
-        selected_rows = copy.deepcopy(selected_rows)
         print(f"selectbox_years == 0, selected_rows = {selected_rows}")
     else:
         selected_rows = selected_rows[selected_rows['Year'].isin([selectbox_years])]
