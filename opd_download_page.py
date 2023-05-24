@@ -1,31 +1,58 @@
 import streamlit as st
 import pandas as pd
+import logging
 
 import openpolicedata as opd
 
 
+# https://discuss.streamlit.io/t/streamlit-duplicates-log-messages-when-stream-handler-is-added/16426/4
+def create_logger(name, level='INFO', file=None, addtime=False):
+    logger = logging.getLogger(name)
+    logger.propagate = False
+    logger.setLevel(level)
+    if addtime:
+        format = "%(asctime)s :: %(message)s"
+    else:
+        format = '%(message)s'
+    #if no streamhandler present, add one
+    if sum([isinstance(handler, logging.StreamHandler) for handler in logger.handlers]) == 0:
+        ch = logging.StreamHandler()
+        ch.setFormatter(logging.Formatter(format, '%y-%m-%d %H:%M:%S'))
+        logger.addHandler(ch)
+    #if a file handler is requested, check for existence then add
+    if file is not None:
+        if sum([isinstance(handler, logging.FileHandler) for handler in logger.handlers]) == 0:
+            ch = logging.FileHandler(file, 'w')
+            ch.setFormatter(logging.Formatter(format, '%y-%m-%d %H:%M:%S'))
+            logger.addHandler(ch)
+        
+    return logger
+
+if 'logger' not in st.session_state:
+    st.session_state['logger'] = create_logger(name = 'opd-app', level = 'DEBUG')
+logger = st.session_state['logger']
+
 #create a global flag to say if should download or not  (default to false)  
 
 if 'show_download' not in st.session_state:    
-    print("Reset download flag")
+    logger.debug("Reset download flag")
     st.session_state['show_download'] = False
 else:
-    print("SKIP reset download flag")
+    logger.debug("SKIP reset download flag")
 
 if 'data_from_url' not in st.session_state:    
     st.session_state['data_from_url'] = None
 
 if 'selected_rows' not in st.session_state:  
     st.session_state['selected_rows'] = None
-    print(f"'selected_rows' NOT IN in st.session_state. st.session_state['selected_rows'] = {st.session_state['selected_rows']}")
+    logger.debug(f"'selected_rows' NOT IN in st.session_state. st.session_state['selected_rows'] = {st.session_state['selected_rows']}")
 else:
     selected_rows=st.session_state['selected_rows']
-    print(f"'selected_rows' IN st.session_state. st.session_state['selected_rows'] = {st.session_state['selected_rows']}")
+    logger.debug(f"'selected_rows' IN st.session_state. st.session_state['selected_rows'] = {st.session_state['selected_rows']}")
     
 @st.cache_data
 def get_data_catalog():
     df = opd.datasets.query()
-    df = df[~df['Year'].isin(['MULTI', 'NONE'])]
     df['Year'] = df['Year'].astype(str)
     return df
 
@@ -42,33 +69,33 @@ with st.sidebar:
     st.header('Dataset Filters')
     selectbox_states = st.selectbox('States', data_catalog['State'].unique(), 
                                     help='Select the states you want to download data for')
-    print(f"selectbox_states = {selectbox_states}")
+    logger.debug(f"selectbox_states = {selectbox_states}")
     if len(selectbox_states) == 0:
         selected_rows = data_catalog.copy()
-        print(f"selectbox_states == 0, selected_rows = {selected_rows}")
+        logger.debug(f"selectbox_states == 0, selected_rows = {selected_rows}")
     else:
         selected_rows = data_catalog[data_catalog['State'].isin([selectbox_states])]
-        print(f"selectbox_states != 0, selected_rows = {selected_rows}")
+        logger.debug(f"selectbox_states != 0, selected_rows = {selected_rows}")
 
     selectbox_sources = st.selectbox('Available sources', selected_rows['SourceName'].unique(), 
                                      help='Select the sources')
 
     if len(selectbox_sources) == 0:
-        print(f"selectbox_sources == 0, selected_rows = {selected_rows}")
+        logger.debug(f"selectbox_sources == 0, selected_rows = {selected_rows}")
     else:        
         selected_rows = selected_rows[selected_rows['SourceName'].isin(
             [selectbox_sources])]
-        print(f"selectbox_sources != 0, selected_rows = {selected_rows}")
+        logger.debug(f"selectbox_sources != 0, selected_rows = {selected_rows}")
 
     selectbox_table_types = st.selectbox('Available table types', selected_rows['TableType'].unique(), 
                                          help='Select the table type')
 
     if len(selectbox_table_types) == 0:       
-        print(f"selectbox_table_types == 0, selected_rows = {selected_rows}")
+        logger.debug(f"selectbox_table_types == 0, selected_rows = {selected_rows}")
     else:
         selected_rows = selected_rows[selected_rows['TableType'].isin(
             [selectbox_table_types])]
-        print(f"selectbox_table_types != 0, selected_rows = {selected_rows}")
+        logger.debug(f"selectbox_table_types != 0, selected_rows = {selected_rows}")
 
     selectbox_years = st.selectbox('Available years', pd.unique(
        selected_rows['Year']), help='Select the year')
@@ -80,7 +107,7 @@ with st.sidebar:
         print(f"selectbox_years != 0, selected_rows = {selected_rows}")
         
     st.session_state['selected_rows']=selected_rows
-print(f"selected_rows = {selected_rows}")
+logger.debug(f"selected_rows = {selected_rows}")
 
 
 
@@ -89,30 +116,30 @@ collect_help = "This collects the data from the data source such as a URL and wi
 if st.session_state['show_download'] == True:
     if st.download_button('Download CSV', data=st.session_state['csv_text_output'] , file_name="selected_rows.csv", mime='text/csv'):
         st.session_state['show_download'] = False
-        print('Download complete!!!!!')
+        logger.debug('Download complete!!!!!')
         st.session_state['csv_text_output'] = None
         st.experimental_rerun()
  
 else:
     if st.button('Collect data', help=collect_help):
-        print(f'***source_name={selected_rows.iloc[0]["SourceName"]}, state={selected_rows.iloc[0]["State"]}')
+        logger.debug(f'***source_name={selected_rows.iloc[0]["SourceName"]}, state={selected_rows.iloc[0]["State"]}')
         src = opd.Source(source_name=selected_rows.iloc[0]["SourceName"], state=selected_rows.iloc[0]["State"])        
         types = src.get_tables_types()
-        print(f"types = {types}")
+        logger.debug(f"types = {types}")
         years = src.get_years(table_type=types[0])
-        print(f"years = {years}")
-        print(f'***year={selected_rows.iloc[0]["Year"]}, table_type={selected_rows.iloc[0]["TableType"]}')
-        print("Downloading data from URL")
+        logger.debug(f"years = {years}")
+        logger.debug(f'***year={selected_rows.iloc[0]["Year"]}, table_type={selected_rows.iloc[0]["TableType"]}')
+        logger.debug("Downloading data from URL")
         data_from_url = src.load_from_url(year=int(selected_rows.iloc[0]["Year"]), table_type=selected_rows.iloc[0]["TableType"]) 
-        print(f"Data downloaded from URL. Total of {len(data_from_url.table)} rows")
+        logger.debug(f"Data downloaded from URL. Total of {len(data_from_url.table)} rows")
         csv_text = data_from_url.table.to_csv(index=False)
         csv_text_output = csv_text.encode('utf-8', 'surrogateescape')
         st.session_state['data_from_url'] = data_from_url
         st.session_state['csv_text_output'] = csv_text_output
         #st.dataframe(data=selected_rows)
         st.session_state['show_download'] = True
-        print(f"csv_text_output len is {len(csv_text_output)}  type(csv_text_output) = {type(csv_text_output)}")
-        print(f"st.session_state['selected_rows'] = {st.session_state['selected_rows']}")
+        logger.debug(f"csv_text_output len is {len(csv_text_output)}  type(csv_text_output) = {type(csv_text_output)}")
+        logger.debug(f"st.session_state['selected_rows'] = {st.session_state['selected_rows']}")
         st.session_state['selected_rows']=selected_rows
         st.experimental_rerun()
         
@@ -127,4 +154,4 @@ if show_all_datasets == True:
 with expander_container:
     st.dataframe(data=selected_rows)
 
-print(f"Done with rendering dataframe")
+logger.debug(f"Done with rendering dataframe")
