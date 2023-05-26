@@ -4,6 +4,7 @@ import logging
 
 import openpolicedata as opd
 
+NA_DISPLAY_VALUE = "NOT APPLICABLE"
 
 # https://discuss.streamlit.io/t/streamlit-duplicates-log-messages-when-stream-handler-is-added/16426/4
 def create_logger(name, level='INFO', file=None, addtime=False):
@@ -42,19 +43,20 @@ else:
 
 if 'data_from_url' not in st.session_state:    
     st.session_state['data_from_url'] = None
-
-if 'selected_rows' not in st.session_state:  
-    st.session_state['selected_rows'] = None
-    logger.debug(f"'selected_rows' NOT IN in st.session_state. st.session_state['selected_rows'] = {st.session_state['selected_rows']}")
-else:
-    selected_rows=st.session_state['selected_rows']
-    logger.debug(f"'selected_rows' IN st.session_state. st.session_state['selected_rows'] = {st.session_state['selected_rows']}")
     
 @st.cache_data
 def get_data_catalog():
     df = opd.datasets.query()
     df['Year'] = df['Year'].astype(str)
     return df
+
+@st.cache_data
+def get_years(selectbox_sources, selectbox_states, selectbox_table_types):
+    src = opd.Source(selectbox_sources, state=selectbox_states)
+    years = src.get_years(table_type=selectbox_table_types, force=True)
+    years.sort(reverse=True)
+    logger.debug(f"Updated years to {years}")
+    return [str(x) if x!=opd.defs.NA else NA_DISPLAY_VALUE for x in years]
 
 
 data_catalog = get_data_catalog()
@@ -97,16 +99,30 @@ with st.sidebar:
             [selectbox_table_types])]
         logger.debug(f"selectbox_table_types != 0, selected_rows = {selected_rows}")
 
-    selectbox_years = st.selectbox('Available years', pd.unique(
-       selected_rows['Year']), help='Select the year')
+    years = get_years(selectbox_sources, selectbox_states, selectbox_table_types)
 
+    selectbox_years = st.selectbox('Available years', years, 
+                                   help='Select the year')
+    
     if len(selectbox_years) == 0:
-        print(f"selectbox_years == 0, selected_rows = {selected_rows}")
+        logger.debug(f"selectbox_years == 0, selected_rows = {selected_rows}")
     else:
-        selected_rows = selected_rows[selected_rows['Year'].isin([selectbox_years])]
-        print(f"selectbox_years != 0, selected_rows = {selected_rows}")
+        selected_year = selectbox_years if selectbox_years!=NA_DISPLAY_VALUE else opd.defs.NA
+        logger.debug(f"Selected year is {selected_year}")
+        matches = selected_rows['Year'] == selected_year
+        if matches.any():
+            selected_rows = selected_rows[matches]
+            logger.debug(f"selectbox_years != 0, selected_rows = {selected_rows}")
+        else:
+            selected_rows = selected_rows[selected_rows['Year']==opd.defs.MULTI]
+            if len(selected_rows)>1:
+                logger.debug("Number of multi-rows is >1")
+                start_years = selected_rows["coverage_start"].apply(lambda x: int(x.year) if pd.notnull(x) else x)
+                end_years = selected_rows["coverage_end"].apply(lambda x: int(x.year) if pd.notnull(x) else x)
+                all_years = [range(x,y+1) if pd.notnull(x) and pd.notnull(y) else pd.NA for x,y in zip(start_years, end_years)]
+                tf = [selected_year in y if pd.notnull(y) else False for y in all_years]
+                selected_rows = selected_rows[tf]
         
-    st.session_state['selected_rows']=selected_rows
 logger.debug(f"selected_rows = {selected_rows}")
 
 
@@ -122,15 +138,12 @@ if st.session_state['show_download'] == True:
  
 else:
     if st.button('Collect data', help=collect_help):
-        logger.debug(f'***source_name={selected_rows.iloc[0]["SourceName"]}, state={selected_rows.iloc[0]["State"]}')
-        src = opd.Source(source_name=selected_rows.iloc[0]["SourceName"], state=selected_rows.iloc[0]["State"])        
-        types = src.get_tables_types()
-        logger.debug(f"types = {types}")
-        years = src.get_years(table_type=types[0])
-        logger.debug(f"years = {years}")
-        logger.debug(f'***year={selected_rows.iloc[0]["Year"]}, table_type={selected_rows.iloc[0]["TableType"]}')
+        logger.debug(f'***source_name={selectbox_sources}, state={selectbox_states}')
+        src = opd.Source(source_name=selectbox_sources, state=selectbox_states)        
         logger.debug("Downloading data from URL")
-        data_from_url = src.load_from_url(year=int(selected_rows.iloc[0]["Year"]), table_type=selected_rows.iloc[0]["TableType"]) 
+        year = int(selectbox_years) if selectbox_years.isdigit() else selectbox_years
+        logger.debug(f"Table type is {selectbox_table_types} and year is {year}")
+        data_from_url = src.load_from_url(year=year, table_type=selectbox_table_types) 
         logger.debug(f"Data downloaded from URL. Total of {len(data_from_url.table)} rows")
         csv_text = data_from_url.table.to_csv(index=False)
         csv_text_output = csv_text.encode('utf-8', 'surrogateescape')
@@ -139,8 +152,7 @@ else:
         #st.dataframe(data=selected_rows)
         st.session_state['show_download'] = True
         logger.debug(f"csv_text_output len is {len(csv_text_output)}  type(csv_text_output) = {type(csv_text_output)}")
-        logger.debug(f"st.session_state['selected_rows'] = {st.session_state['selected_rows']}")
-        st.session_state['selected_rows']=selected_rows
+
         st.experimental_rerun()
         
 # if (st.session_state['data_from_url'] is not None):
