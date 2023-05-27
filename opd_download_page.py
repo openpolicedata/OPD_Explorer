@@ -1,4 +1,5 @@
 import streamlit as st
+import math
 import matplotlib.pyplot as plt
 import pandas as pd
 import copy
@@ -13,9 +14,6 @@ if 'show_download' not in st.session_state:
     st.session_state['show_download'] = False
 else:
     print("SKIP reset download flag")
-
-if 'data_from_url' not in st.session_state:    
-    st.session_state['data_from_url'] = None
 
 if 'selected_rows' not in st.session_state:  
     st.session_state['selected_rows'] = None
@@ -109,11 +107,32 @@ else:
         print(f"years = {years}")
         print(f'***year={selected_rows.iloc[0]["Year"]}, table_type={selected_rows.iloc[0]["TableType"]}')
         print("Downloading data from URL")
-        data_from_url = src.load_from_url(year=int(selected_rows.iloc[0]["Year"]), table_type=selected_rows.iloc[0]["TableType"]) 
-        print(f"Data downloaded from URL. Total of {len(data_from_url.table)} rows")
-        csv_text = data_from_url.table.to_csv(index=False)
+        record_count = None
+        year = int(selected_rows.iloc[0]["Year"])
+        table_type = selected_rows.iloc[0]["TableType"]
+        if not selected_rows.iloc[0]["DataType"] in ["CSV","Excel"]:
+            with st.spinner("Retrieving record count..."):
+                record_count = src.get_count(year=year, table_type=table_type)
+
+        wait_text = "Retrieving Data..."
+        if record_count is None:
+            with st.spinner(wait_text):
+                data_from_url = src.load_from_url(year=year, table_type=table_type).table
+        else:
+            df_list = []
+            batch_size = 1000
+            nbatches = math.ceil(record_count / batch_size)
+            pbar = st.progress(0, text=wait_text)
+            iter = 0
+            for tbl in src.load_from_url_gen(year=year, table_type=table_type, nbatch=batch_size):
+                iter+=1
+                df_list.append(tbl.table)
+                pbar.progress(iter / nbatches, text=wait_text)
+
+            data_from_url = pd.concat(df_list)
+        print(f"Data downloaded from URL. Total of {len(data_from_url)} rows")
+        csv_text = data_from_url.to_csv(index=False)
         csv_text_output = csv_text.encode('utf-8', 'surrogateescape')
-        st.session_state['data_from_url'] = data_from_url
         st.session_state['csv_text_output'] = csv_text_output
         #st.dataframe(data=selected_rows)
         st.session_state['show_download'] = True
@@ -121,9 +140,6 @@ else:
         print(f"st.session_state['selected_rows'] = {st.session_state['selected_rows']}")
         st.session_state['selected_rows']=selected_rows
         st.experimental_rerun()
-        
-# if (st.session_state['data_from_url'] is not None):
-#     st.dataframe(data=st.session_state['data_from_url'].table)
     
     
 show_all_datasets = False # st.checkbox('Show all datasets available')
