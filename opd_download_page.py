@@ -129,9 +129,11 @@ logger.debug(f"selected_rows = {selected_rows}")
 collect_help = "This collects the data from the data source such as a URL and will make it ready for download. This may take some time."
 
 if st.session_state['show_download'] == True:
-    if st.download_button('Download CSV', data=st.session_state['csv_text_output'] , file_name="selected_rows.csv", mime='text/csv'):
+    
+    csv_filename = opd.data.get_csv_filename(selectbox_states, selectbox_sources, selectbox_states, selectbox_table_types, selected_year)
+    if st.download_button('Download CSV', data=st.session_state['csv_text_output'] , file_name=csv_filename, mime='text/csv'):
         st.session_state['show_download'] = False
-        logger.debug('Download complete!!!!!')
+        logger.debug(f'Download complete of the file {csv_filename}.')
         st.session_state['csv_text_output'] = None
         st.experimental_rerun()
  
@@ -163,7 +165,7 @@ else:
                 pbar.progress(iter / nbatches, text=wait_text)
 
             data_from_url = pd.concat(df_list)
-        print(f"Data downloaded from URL. Total of {len(data_from_url)} rows")
+        logger.debug(f"Data downloaded from URL. Total of {len(data_from_url)} rows")
         csv_text = data_from_url.to_csv(index=False)
         csv_text_output = csv_text.encode('utf-8', 'surrogateescape')
         st.session_state['csv_text_output'] = csv_text_output
