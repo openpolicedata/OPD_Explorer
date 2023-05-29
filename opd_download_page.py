@@ -1,4 +1,5 @@
 import streamlit as st
+import math
 import pandas as pd
 import logging
 
@@ -40,14 +41,10 @@ if 'show_download' not in st.session_state:
     st.session_state['show_download'] = False
 else:
     logger.debug("SKIP reset download flag")
-
-if 'data_from_url' not in st.session_state:    
-    st.session_state['data_from_url'] = None
     
 @st.cache_data
 def get_data_catalog():
     df = opd.datasets.query()
-    df['Year'] = df['Year'].astype(str)
     return df
 
 @st.cache_data
@@ -108,7 +105,8 @@ with st.sidebar:
         logger.debug(f"selectbox_years == 0, selected_rows = {selected_rows}")
     else:
         selected_year = selectbox_years if selectbox_years!=NA_DISPLAY_VALUE else opd.defs.NA
-        logger.debug(f"Selected year is {selected_year}")
+        selected_year = int(selected_year) if selected_year.isdigit() else selected_year
+        logger.debug(f"Selected year is {selected_year} with type {type(selected_year)}")
         matches = selected_rows['Year'] == selected_year
         if matches.any():
             selected_rows = selected_rows[matches]
@@ -125,8 +123,6 @@ with st.sidebar:
         
 logger.debug(f"selected_rows = {selected_rows}")
 
-
-
 collect_help = "This collects the data from the data source such as a URL and will make it ready for download. This may take some time."
 
 if st.session_state['show_download'] == True:
@@ -141,22 +137,38 @@ else:
         logger.debug(f'***source_name={selectbox_sources}, state={selectbox_states}')
         src = opd.Source(source_name=selectbox_sources, state=selectbox_states)        
         logger.debug("Downloading data from URL")
-        year = int(selectbox_years) if selectbox_years.isdigit() else selectbox_years
-        logger.debug(f"Table type is {selectbox_table_types} and year is {year}")
-        data_from_url = src.load_from_url(year=year, table_type=selectbox_table_types) 
-        logger.debug(f"Data downloaded from URL. Total of {len(data_from_url.table)} rows")
-        csv_text = data_from_url.table.to_csv(index=False)
+        logger.debug(f"Table type is {selectbox_table_types} and year is {selected_year}")
+
+        record_count = None
+        if not selected_rows.iloc[0]["DataType"] in ["CSV","Excel"]:
+            with st.spinner("Retrieving record count..."):
+                record_count = src.get_count(year=selected_year, table_type=selectbox_table_types)
+
+        wait_text = "Retrieving Data..."
+        if record_count is None:
+            with st.spinner(wait_text):
+                data_from_url = src.load_from_url(year=selected_year, table_type=selectbox_table_types).table
+        else:
+            df_list = []
+            batch_size = 5000
+            nbatches = math.ceil(record_count / batch_size)
+            pbar = st.progress(0, text=wait_text)
+            iter = 0
+            for tbl in src.load_from_url_gen(year=selected_year, table_type=selectbox_table_types, nbatch=batch_size):
+                iter+=1
+                df_list.append(tbl.table)
+                pbar.progress(iter / nbatches, text=wait_text)
+
+            data_from_url = pd.concat(df_list)
+        print(f"Data downloaded from URL. Total of {len(data_from_url)} rows")
+        csv_text = data_from_url.to_csv(index=False)
         csv_text_output = csv_text.encode('utf-8', 'surrogateescape')
-        st.session_state['data_from_url'] = data_from_url
         st.session_state['csv_text_output'] = csv_text_output
         #st.dataframe(data=selected_rows)
         st.session_state['show_download'] = True
         logger.debug(f"csv_text_output len is {len(csv_text_output)}  type(csv_text_output) = {type(csv_text_output)}")
 
         st.experimental_rerun()
-        
-# if (st.session_state['data_from_url'] is not None):
-#     st.dataframe(data=st.session_state['data_from_url'].table)
     
     
 show_all_datasets = False # st.checkbox('Show all datasets available')
