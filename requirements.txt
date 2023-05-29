@@ -1,4 +1,3 @@
 openpolicedata
-matplotlib
 pandas
 streamlit
