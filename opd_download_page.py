@@ -27,6 +27,7 @@ def get_data_catalog():
     df = opd.datasets.query()
     df = df[~df['Year'].isin(['MULTI', 'NONE'])]
     df['Year'] = df['Year'].astype(str)
+    df = df.sort_values(by=["State","SourceName","TableType"])
     return df
 
 
