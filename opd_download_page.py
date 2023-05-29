@@ -47,7 +47,7 @@ def get_data_catalog():
     df = opd.datasets.query()
     return df
 
-@st.cache_data
+@st.cache_data(show_spinner="Loading year information...")
 def get_years(selectbox_sources, selectbox_states, selectbox_table_types):
     src = opd.Source(selectbox_sources, state=selectbox_states)
     years = src.get_years(table_type=selectbox_table_types, force=True)
