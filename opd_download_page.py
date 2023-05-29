@@ -41,6 +41,9 @@ if 'show_download' not in st.session_state:
     st.session_state['show_download'] = False
 else:
     logger.debug("SKIP reset download flag")
+
+if 'last_selection' not in st.session_state:
+    st.session_state['last_selection'] = None
     
 @st.cache_data
 def get_data_catalog():
@@ -111,19 +114,20 @@ with st.sidebar:
                 all_years = [range(x,y+1) if pd.notnull(x) and pd.notnull(y) else pd.NA for x,y in zip(start_years, end_years)]
                 tf = [selected_year in y if pd.notnull(y) else False for y in all_years]
                 selected_rows = selected_rows[tf]
-        
-logger.debug(f"selected_rows = {selected_rows}")
+
+new_selection = [selectbox_states, selectbox_sources, selectbox_table_types, selectbox_years]
+logger.debug(f"Old selection = {st.session_state['last_selection']}")
+logger.debug(f"New selection = {new_selection}")
+if st.session_state['last_selection'] != new_selection:
+    logger.debug("Resetting download button")
+    st.session_state['show_download'] = False
+    st.session_state['csv_text_output'] = None
+    st.session_state['last_selection'] = new_selection
 
 collect_help = "This collects the data from the data source such as a URL and will make it ready for download. This may take some time."
 
-if st.session_state['show_download']:
-    if st.download_button('Download CSV', data=st.session_state['csv_text_output'] , file_name="selected_rows.csv", mime='text/csv'):
-        logger.debug('Download complete!!!!!')
-        st.session_state['csv_text_output'] = None
-        st.experimental_rerun()
- 
-else:
-    if st.button('Collect data', help=collect_help):
+with st.empty():
+    if not st.session_state['show_download'] and st.button('Collect data', help=collect_help):
         logger.debug(f'***source_name={selectbox_sources}, state={selectbox_states}')
         src = opd.Source(source_name=selectbox_sources, state=selectbox_states)        
         logger.debug("Downloading data from URL")
@@ -158,8 +162,8 @@ else:
         st.session_state['show_download'] = True
         logger.debug(f"csv_text_output len is {len(csv_text_output)}  type(csv_text_output) = {type(csv_text_output)}")
 
-        st.experimental_rerun()
-    
+    if st.session_state['show_download'] and st.download_button('Download CSV', data=st.session_state['csv_text_output'] , file_name="selected_rows.csv", mime='text/csv'):
+        logger.debug('Download complete!!!!!')
     
     
 with expander_container:
