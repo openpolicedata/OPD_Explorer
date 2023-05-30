@@ -41,12 +41,13 @@ if 'show_download' not in st.session_state:
     st.session_state['show_download'] = False
 else:
     logger.debug("SKIP reset download flag")
+
+if 'last_selection' not in st.session_state:
+    st.session_state['last_selection'] = None
     
 @st.cache_data
 def get_data_catalog():
     df = opd.datasets.query()
-    df = df[~df['Year'].isin(['MULTI', 'NONE'])]
-    df['Year'] = df['Year'].astype(str)
     df = df.sort_values(by=["State","SourceName","TableType"])
     return df
 
@@ -74,39 +75,29 @@ with st.sidebar:
     logger.debug(f"selectbox_states = {selectbox_states}")
     if len(selectbox_states) == 0:
         selected_rows = data_catalog.copy()
-        logger.debug(f"selectbox_states == 0, selected_rows = {selected_rows}")
     else:
         selected_rows = data_catalog[data_catalog['State'].isin([selectbox_states])]
-        logger.debug(f"selectbox_states != 0, selected_rows = {selected_rows}")
 
     selectbox_sources = st.selectbox('Available sources', selected_rows['SourceName'].unique(), 
                                      help='Select the sources')
 
-    if len(selectbox_sources) == 0:
-        logger.debug(f"selectbox_sources == 0, selected_rows = {selected_rows}")
-    else:        
+    if len(selectbox_sources) > 0:    
         selected_rows = selected_rows[selected_rows['SourceName'].isin(
             [selectbox_sources])]
-        logger.debug(f"selectbox_sources != 0, selected_rows = {selected_rows}")
 
     selectbox_table_types = st.selectbox('Available table types', selected_rows['TableType'].unique(), 
                                          help='Select the table type')
 
-    if len(selectbox_table_types) == 0:       
-        logger.debug(f"selectbox_table_types == 0, selected_rows = {selected_rows}")
-    else:
+    if len(selectbox_table_types) > 0:       
         selected_rows = selected_rows[selected_rows['TableType'].isin(
             [selectbox_table_types])]
-        logger.debug(f"selectbox_table_types != 0, selected_rows = {selected_rows}")
 
     years = get_years(selectbox_sources, selectbox_states, selectbox_table_types)
 
     selectbox_years = st.selectbox('Available years', years, 
                                    help='Select the year')
     
-    if len(selectbox_years) == 0:
-        logger.debug(f"selectbox_years == 0, selected_rows = {selected_rows}")
-    else:
+    if len(selectbox_years) > 0:
         selected_year = selectbox_years if selectbox_years!=NA_DISPLAY_VALUE else opd.defs.NA
         selected_year = int(selected_year) if selected_year.isdigit() else selected_year
         logger.debug(f"Selected year is {selected_year} with type {type(selected_year)}")
@@ -123,20 +114,20 @@ with st.sidebar:
                 all_years = [range(x,y+1) if pd.notnull(x) and pd.notnull(y) else pd.NA for x,y in zip(start_years, end_years)]
                 tf = [selected_year in y if pd.notnull(y) else False for y in all_years]
                 selected_rows = selected_rows[tf]
-        
-logger.debug(f"selected_rows = {selected_rows}")
+
+new_selection = [selectbox_states, selectbox_sources, selectbox_table_types, selectbox_years]
+logger.debug(f"Old selection = {st.session_state['last_selection']}")
+logger.debug(f"New selection = {new_selection}")
+if st.session_state['last_selection'] != new_selection:
+    logger.debug("Resetting download button")
+    st.session_state['show_download'] = False
+    st.session_state['csv_text_output'] = None
+    st.session_state['last_selection'] = new_selection
 
 collect_help = "This collects the data from the data source such as a URL and will make it ready for download. This may take some time."
 
-if st.session_state['show_download'] == True:
-    if st.download_button('Download CSV', data=st.session_state['csv_text_output'] , file_name="selected_rows.csv", mime='text/csv'):
-        st.session_state['show_download'] = False
-        logger.debug('Download complete!!!!!')
-        st.session_state['csv_text_output'] = None
-        st.experimental_rerun()
- 
-else:
-    if st.button('Collect data', help=collect_help):
+with st.empty():
+    if not st.session_state['show_download'] and st.button('Collect data', help=collect_help):
         logger.debug(f'***source_name={selectbox_sources}, state={selectbox_states}')
         src = opd.Source(source_name=selectbox_sources, state=selectbox_states)        
         logger.debug("Downloading data from URL")
@@ -163,7 +154,7 @@ else:
                 pbar.progress(iter / nbatches, text=wait_text)
 
             data_from_url = pd.concat(df_list)
-        print(f"Data downloaded from URL. Total of {len(data_from_url)} rows")
+        logger.debug(f"Data downloaded from URL. Total of {len(data_from_url)} rows")
         csv_text = data_from_url.to_csv(index=False)
         csv_text_output = csv_text.encode('utf-8', 'surrogateescape')
         st.session_state['csv_text_output'] = csv_text_output
@@ -171,12 +162,9 @@ else:
         st.session_state['show_download'] = True
         logger.debug(f"csv_text_output len is {len(csv_text_output)}  type(csv_text_output) = {type(csv_text_output)}")
 
-        st.experimental_rerun()
+    if st.session_state['show_download'] and st.download_button('Download CSV', data=st.session_state['csv_text_output'] , file_name="selected_rows.csv", mime='text/csv'):
+        logger.debug('Download complete!!!!!')
     
-    
-show_all_datasets = False # st.checkbox('Show all datasets available')
-if show_all_datasets == True:
-    st.dataframe(data=data_catalog)
     
 with expander_container:
     st.dataframe(data=selected_rows)
