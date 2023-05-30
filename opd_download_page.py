@@ -130,7 +130,7 @@ collect_help = "This collects the data from the data source such as a URL and wi
 
 if st.session_state['show_download'] == True:
     
-    csv_filename = opd.data.get_csv_filename(selectbox_states, selectbox_sources, selectbox_states, selectbox_table_types, selected_year)
+    csv_filename = opd.data.get_csv_filename(selected_rows.iloc[0]["State"], selected_rows.iloc[0]["SourceName"], selected_rows.iloc[0]["Agency"] , selected_rows.iloc[0]["TableType"], selected_rows.iloc[0]["Year"])
     if st.download_button('Download CSV', data=st.session_state['csv_text_output'] , file_name=csv_filename, mime='text/csv'):
         st.session_state['show_download'] = False
         logger.debug(f'Download complete of the file {csv_filename}.')
