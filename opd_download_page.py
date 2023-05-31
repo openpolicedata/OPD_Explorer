@@ -162,8 +162,11 @@ with st.empty():
         st.session_state['show_download'] = True
         logger.debug(f"csv_text_output len is {len(csv_text_output)}  type(csv_text_output) = {type(csv_text_output)}")
 
-    if st.session_state['show_download'] and st.download_button('Download CSV', data=st.session_state['csv_text_output'] , file_name="selected_rows.csv", mime='text/csv'):
-        logger.debug('Download complete!!!!!')
+    if st.session_state['show_download']:
+        csv_filename = opd.data.get_csv_filename(selected_rows.iloc[0]["State"], selected_rows.iloc[0]["SourceName"], selected_rows.iloc[0]["Agency"] , selected_rows.iloc[0]["TableType"], selected_year)
+        logger.debug(f"csv_filename = {csv_filename}")
+        if st.download_button('Download CSV', data=st.session_state['csv_text_output'] , file_name=csv_filename, mime='text/csv'):
+            logger.debug('Download complete!!!!!')
     
     
 with expander_container:
