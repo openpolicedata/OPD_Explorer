@@ -1,5 +1,6 @@
 import streamlit as st
 import math
+from packaging import version
 import pandas as pd
 import logging
 
@@ -48,6 +49,10 @@ if 'last_selection' not in st.session_state:
 @st.cache_data
 def get_data_catalog():
     df = opd.datasets.query()
+    # Remove min_version = -1 (not available in any version) or min_version > current version
+    df = df[df["min_version"].apply(lambda x: 
+                                    pd.isnull(x) or (x.strip()!="-1" and version.parse(opd.__version__) >= version.parse(x))
+                                    )]
     df = df.sort_values(by=["State","SourceName","TableType"])
     return df
 
