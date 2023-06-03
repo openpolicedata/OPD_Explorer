@@ -1,3 +1,4 @@
 openpolicedata
+packaging
 pandas
 streamlit
