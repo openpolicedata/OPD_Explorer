@@ -195,7 +195,8 @@ with st.empty():
 
         if len(data_from_url)>0:
             logger.debug(f"Data downloaded from URL. Total of {len(data_from_url)} rows")
-            st.session_state['preview'] = data_from_url.head(20)
+            # Replace non-ASCII characters with '' because st.dataframe will throw an error otherwise
+            st.session_state['preview'] = data_from_url.head(20).replace({r'[^\x00-\x7F]+':''}, regex=True)
             csv_text = data_from_url.to_csv(index=False)
             csv_text_output = csv_text.encode('utf-8', 'surrogateescape')
             st.session_state['csv_text_output'] = csv_text_output
