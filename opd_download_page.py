@@ -73,9 +73,8 @@ data_catalog = get_data_catalog()
 st.title('Open Police Data')
 
 
-st.header('Filtered dataset')
+st.subheader('Selected Dataset Details')
 expander_container = st.container()
-
 
 with st.sidebar:
     st.header('Dataset Filters')
@@ -138,6 +137,7 @@ if st.session_state['last_selection'] != new_selection:
     logger.debug("Resetting download button")
     st.session_state['show_download'] = False
     st.session_state['csv_text_output'] = None
+    st.session_state['preview'] = None
     st.session_state['last_selection'] = new_selection
 
 collect_help = "This collects the data from the data source such as a URL and will make it ready for download. This may take some time."
@@ -181,7 +181,7 @@ with st.empty():
                 iter+=1
                 df_list.append(tbl.table)
                 pbar.progress(iter / nbatches, text=wait_text)
-
+                
             if len(df_list)==0:
                 st.write(no_data_str)
                 data_from_url = []
@@ -203,8 +203,12 @@ with st.empty():
         if st.download_button('Download CSV', data=st.session_state['csv_text_output'] , file_name=csv_filename, mime='text/csv'):
             logger.debug('Download complete!!!!!')
     
-    
 with expander_container:
     st.dataframe(data=selected_rows)
+
+if st.session_state["preview"] is not None:
+    st.divider()
+    st.subheader("Preview")
+    st.dataframe(data=st.session_state["preview"])
 
 logger.debug(f"Done with rendering dataframe")
