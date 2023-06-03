@@ -195,10 +195,10 @@ with st.empty():
 
         if len(data_from_url)>0:
             logger.debug(f"Data downloaded from URL. Total of {len(data_from_url)} rows")
+            st.session_state['preview'] = data_from_url.head(20)
             csv_text = data_from_url.to_csv(index=False)
             csv_text_output = csv_text.encode('utf-8', 'surrogateescape')
             st.session_state['csv_text_output'] = csv_text_output
-            #st.dataframe(data=selected_rows)
             st.session_state['show_download'] = True
             logger.debug(f"csv_text_output len is {len(csv_text_output)}  type(csv_text_output) = {type(csv_text_output)}")
 
