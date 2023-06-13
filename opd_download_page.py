@@ -76,8 +76,13 @@ def get_agencies(selectbox_sources, selectbox_states, selectbox_table_types, yea
 
 
 data_catalog = get_data_catalog()
-st.title('Open Police Data')
+st.title('OpenPoliceData Explorer')
+st.caption("Explorer uses the [OpenPoliceData](https://pypi.org/project/openpolicedata/) Python library to access 365 (and growing) "+
+           "incident-level datasets from police departments around the United States "+
+           "including traffic stops, use of force, and officer-involved shootings data.")
 
+# Create columns to center text
+st.markdown("Find Dataset ➡️ Retrieve Data ➡️ Download CSV")
 
 st.subheader('Selected Dataset Details')
 expander_container = st.container()
@@ -156,7 +161,7 @@ if selectbox_agencies is not None and selectbox_agencies!=ALL:
 logger.debug(f"Agency name is {agency_name} and agency filter is {agency_filter}")
 
 with st.empty():
-    if st.session_state["preview"] is None and st.button('Collect data', help=collect_help):
+    if st.session_state["preview"] is None and st.button('Retrieve data', help=collect_help):
         logger.debug(f'***source_name={selectbox_sources}, state={selectbox_states}')
         src = opd.Source(source_name=selectbox_sources, state=selectbox_states)        
         logger.debug("Downloading data from URL")
