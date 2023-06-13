@@ -6,6 +6,15 @@ import logging
 
 import openpolicedata as opd
 
+st.set_page_config(
+    page_title="OpenPoliceData",
+    page_icon="🌃",
+    initial_sidebar_state="expanded",
+    menu_items={
+        'Report a Bug': "https://github.com/openpolicedata/OPD_Explorer/issues"
+    }
+)
+
 NA_DISPLAY_VALUE = "NOT APPLICABLE"
 ALL = "ALL"
 
