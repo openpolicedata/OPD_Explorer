@@ -45,14 +45,6 @@ if 'logger' not in st.session_state:
     st.session_state['logger'] = create_logger(name = 'opd-app', level = 'DEBUG')
 logger = st.session_state['logger']
 
-#create a global flag to say if should download or not  (default to false)  
-
-if 'show_download' not in st.session_state:    
-    logger.debug("Reset download flag")
-    st.session_state['show_download'] = False
-else:
-    logger.debug("SKIP reset download flag")
-
 if 'last_selection' not in st.session_state:
     st.session_state['last_selection'] = None
     
@@ -149,7 +141,6 @@ logger.debug(f"Old selection = {st.session_state['last_selection']}")
 logger.debug(f"New selection = {new_selection}")
 if st.session_state['last_selection'] != new_selection:
     logger.debug("Resetting download button")
-    st.session_state['show_download'] = False
     st.session_state['csv_text_output'] = None
     st.session_state['preview'] = None
     st.session_state['last_selection'] = new_selection
@@ -165,7 +156,7 @@ if selectbox_agencies is not None and selectbox_agencies!=ALL:
 logger.debug(f"Agency name is {agency_name} and agency filter is {agency_filter}")
 
 with st.empty():
-    if not st.session_state['show_download'] and st.button('Collect data', help=collect_help):
+    if st.session_state["preview"] is None and st.button('Collect data', help=collect_help):
         logger.debug(f'***source_name={selectbox_sources}, state={selectbox_states}')
         src = opd.Source(source_name=selectbox_sources, state=selectbox_states)        
         logger.debug("Downloading data from URL")
@@ -176,6 +167,8 @@ with st.empty():
             with st.spinner("Retrieving record count..."):
                 record_count = src.get_count(year=selected_year, table_type=selectbox_table_types, agency=agency_filter)
 
+        logger.debug(f"record_count is {record_count}")
+
         wait_text = "Retrieving Data..."
         no_data_str = f"No data found for the {selectbox_table_types} table for {selectbox_sources} in {selected_year}"
         no_data_str = f"{no_data_str} when filtering for agency {agency_filter}"
@@ -184,6 +177,7 @@ with st.empty():
                 data_from_url = src.load_from_url(year=selected_year, table_type=selectbox_table_types, agency=agency_filter).table
 
             if len(data_from_url)==0:
+                logger.debug("Table is empty")
                 st.write(no_data_str)
         else:
             df_list = []
@@ -199,29 +193,41 @@ with st.empty():
             if len(df_list)==0:
                 st.write(no_data_str)
                 data_from_url = []
+                logger.debug(f"Table is empty")
             else:
                 data_from_url = pd.concat(df_list)
+                logger.debug(f"Table size is {len(data_from_url)}")
 
         if len(data_from_url)>0:
             logger.debug(f"Data downloaded from URL. Total of {len(data_from_url)} rows")
             # Replace non-ASCII characters with '' because st.dataframe will throw an error otherwise
-            st.session_state['preview'] = data_from_url.head(20).replace({r'[^\x00-\x7F]+':''}, regex=True)
+            p = data_from_url.head(20)
+            try:
+                p = p.replace({r'[^\x00-\x7F]+':''}, regex=True)
+            except:
+                pass
+            st.session_state['preview'] = p
+            st.session_state["record_count"] = len(data_from_url)
             csv_text = data_from_url.to_csv(index=False)
             csv_text_output = csv_text.encode('utf-8', 'surrogateescape')
             st.session_state['csv_text_output'] = csv_text_output
-            st.session_state['show_download'] = True
             logger.debug(f"csv_text_output len is {len(csv_text_output)}  type(csv_text_output) = {type(csv_text_output)}")
+        else:
+            logger.debug("No data found")
 
-    if st.session_state['show_download']:
-        csv_filename = opd.data.get_csv_filename(selected_rows.iloc[0]["State"], selected_rows.iloc[0]["SourceName"], agency_name , selected_rows.iloc[0]["TableType"], selected_year)
-        logger.debug(f"csv_filename = {csv_filename}")
-        if st.download_button('Download CSV', data=st.session_state['csv_text_output'] , file_name=csv_filename, mime='text/csv'):
-            logger.debug('Download complete!!!!!')
+    if st.session_state["preview"] is not None:
+        # Replace progress bar with number of records
+        st.markdown(f'*Total Number of Records*: {st.session_state["record_count"]}' )
     
 with expander_container:
     st.dataframe(data=selected_rows)
 
 if st.session_state["preview"] is not None:
+    csv_filename = opd.data.get_csv_filename(selected_rows.iloc[0]["State"], selected_rows.iloc[0]["SourceName"], 
+                                             agency_name , selected_rows.iloc[0]["TableType"], selected_year)
+    if st.download_button('Download CSV', data=st.session_state['csv_text_output'] , file_name=csv_filename, mime='text/csv'):
+        logger.debug('Download complete!!!!!')
+
     st.divider()
     st.subheader("Preview")
     st.dataframe(data=st.session_state["preview"])
