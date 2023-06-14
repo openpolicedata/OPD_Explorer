@@ -240,6 +240,8 @@ with expander_container:
     if not show_table:
         ds = ds[map.values()].iloc[0]
         ds["Table Type"] = ds["Table Type"].title()
+        if pd.isnull(ds["Full Agency Name"]):
+            ds = ds.drop("Full Agency Name")
         no_date = pd.isnull(ds["Coverage Start"])
         ds["Coverage Start"] = ds["Coverage Start"].strftime(r"%B %d, %Y") \
             if not no_date else "N/A"
