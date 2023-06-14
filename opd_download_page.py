@@ -1,5 +1,6 @@
 import streamlit as st
 import math
+import os
 from packaging import version
 import pandas as pd
 import logging
@@ -267,4 +268,4 @@ if st.session_state["preview"] is not None:
     st.subheader("Preview")
     st.dataframe(data=st.session_state["preview"])
 
-logger.debug(f"Done with rendering dataframe")
+logger.debug(f'Done with rendering dataframe with environment variable set = {os.environ["SODAPY_API_KEY"] == st.secrets["SODAPY_API_KEY"]}')
