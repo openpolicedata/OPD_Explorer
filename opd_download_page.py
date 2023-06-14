@@ -225,7 +225,35 @@ with st.empty():
         st.markdown(f'*Total Number of Records*: {st.session_state["record_count"]}' )
     
 with expander_container:
-    st.dataframe(data=selected_rows)
+    map = {
+            "State":"State",
+            "SourceName":"Source",
+            "AgencyFull":"Full Agency Name",
+            "TableType":"Table Type",
+            "coverage_start":"Coverage Start",
+            "coverage_end":"Coverage End (Est.)",
+            "source_url":"Source URL",
+            "readme":"Dictionary URL",
+        }
+    ds = selected_rows.rename(columns=map)
+    show_table = False
+    if not show_table:
+        ds = ds[map.values()].iloc[0]
+        ds["Table Type"] = ds["Table Type"].title()
+        no_date = pd.isnull(ds["Coverage Start"])
+        ds["Coverage Start"] = ds["Coverage Start"].strftime(r"%B %d, %Y") \
+            if not no_date else "N/A"
+        no_date_str = "N/A" if no_date else "Present (Approx.)"
+        ds["Coverage End (Est.)"] = ds["Coverage End (Est.)"].strftime(r"%B %d, %Y") \
+            if pd.notnull(ds["Coverage End (Est.)"]) else no_date_str
+        ds["Dictionary URL"] = "No direct URL recorded. Check Source URL." \
+            if pd.isnull(ds["Dictionary URL"]) else ds["Dictionary URL"]
+        text=""
+        for idx in ds.index:
+            text+=f"**{idx}**: {ds[idx]}  \n"
+        st.info(text)
+    else:
+        st.dataframe(data=selected_rows)
 
 if st.session_state["preview"] is not None:
     csv_filename = opd.data.get_csv_filename(selected_rows.iloc[0]["State"], selected_rows.iloc[0]["SourceName"], 
