@@ -3,6 +3,7 @@ import math
 import os
 from packaging import version
 import pandas as pd
+import re
 import logging
 
 import openpolicedata as opd
@@ -105,14 +106,45 @@ with st.sidebar:
         selected_rows = selected_rows[selected_rows['SourceName'].isin(
             [selectbox_sources])]
 
-    selectbox_table_types = st.selectbox('Available Table Types', selected_rows['TableType'].unique(), 
-                                         help='Select a table type')
+    split_tables = ["COMPLAINTS", "CRASHES", "OFFICER-INVOLVED SHOOTINGS","USE OF FORCE"]
+    table_types = selected_rows['TableType'].unique()
+    table_type_general = table_types.copy()
+    table_types_sub = [None for _ in range(len(table_types))]
+    for k,x in enumerate(table_types):
+        for y in split_tables:
+            m = re.search(y+"\s?-\s?(.+)", x)
+            if m:
+                table_type_general[k] = y
+                table_types_sub[k] = m.group(1)
+                break
 
-    if len(selectbox_table_types) > 0:       
-        selected_rows = selected_rows[selected_rows['TableType'].isin(
-            [selectbox_table_types])]
+    table_type_general_sort = list(set(table_type_general))
+    table_type_general_sort.sort()
+    selectbox_table_types = st.selectbox('Available Table Types', table_type_general_sort, 
+                                         help='Select a table type (such as TRAFFIC STOPS or USE OF FORCE).\n\n'+
+                                         'NOTE: Some datasets are split across multiple tables where unique IDs indicate related data between tables. '+
+                                         "For example, a use of force dataset could have two tables: one for incident details and one for persons involved. "+
+                                         "An incident ID could appear in both tables allowing the user to identify all persons involved in a particular incident.")
 
-    years = get_years(selectbox_sources, selectbox_states, selectbox_table_types)
+    related_tables = None
+    if len(selectbox_table_types) > 0:
+        m = [x==selectbox_table_types for x in table_type_general]
+        table_types = [x for k,x in enumerate(table_types) if m[k]]
+        selected_rows = selected_rows[selected_rows['TableType'].isin(table_types)]
+        table_type_general = [x for k,x in enumerate(table_type_general) if m[k]]
+        table_types_sub = [x for k,x in enumerate(table_types_sub) if m[k]]
+
+        if all([x is not None for x in table_types_sub]):
+            selectbox_subtype = st.selectbox('Table Subcategory', table_types_sub, 
+                                   help=f'The {table_type_general[0]} dataset is split into the following tables that all may be of interest: '+
+                                   f'{table_types_sub}. They likely use unique IDs to enable finding related data across tables.')
+            selected_table = [x for x,y in zip(table_types, table_types_sub) if y==selectbox_subtype][0]
+            related_tables = [x for x,y in zip(table_types, table_types_sub) if y!=selectbox_subtype]
+            selected_rows = selected_rows[selected_rows['TableType']==selected_table]
+        else:
+            selected_table = table_types[0]
+
+    years = get_years(selectbox_sources, selectbox_states, selected_table)
 
     selectbox_years = st.selectbox('Available Years', years, 
                                    help='Select a year')
@@ -137,12 +169,12 @@ with st.sidebar:
                 selected_rows = selected_rows[tf]
 
         if selected_rows.iloc[0]["Agency"]==opd.defs.MULTI and selected_rows.iloc[0]["DataType"] not in ["CSV","Excel"]:
-            agencies = get_agencies(selectbox_sources, selectbox_states, selectbox_table_types, selected_rows.iloc[0]["Year"])
+            agencies = get_agencies(selectbox_sources, selectbox_states, selected_table, selected_rows.iloc[0]["Year"])
             selectbox_agencies = st.selectbox('Available Agencies', agencies, 
                                    help='Select an agency')
 
 
-new_selection = [selectbox_states, selectbox_sources, selectbox_table_types, selectbox_years, selectbox_agencies]
+new_selection = [selectbox_states, selectbox_sources, selected_table, selectbox_years, selectbox_agencies]
 logger.debug(f"Old selection = {st.session_state['last_selection']}")
 logger.debug(f"New selection = {new_selection}")
 if st.session_state['last_selection'] != new_selection:
@@ -151,7 +183,7 @@ if st.session_state['last_selection'] != new_selection:
     st.session_state['preview'] = None
     st.session_state['last_selection'] = new_selection
 
-collect_help = "This collects the data from the data source such as a URL and will make it ready for download. This may take some time."
+collect_help = "This collects the data from the data source's URL. Upon completion, the data will be available for download. This may take some time."
 
 agency_filter = None
 agency_name = selected_rows.iloc[0]["Agency"]
@@ -161,26 +193,30 @@ if selectbox_agencies is not None and selectbox_agencies!=ALL:
 
 logger.debug(f"Agency name is {agency_name} and agency filter is {agency_filter}")
 
+if related_tables is not None:
+    st.markdown(f'*Related tables*: {",".join(related_tables)}' )
+
 with st.empty():
     if st.session_state["preview"] is None and st.button('Retrieve data', help=collect_help):
         logger.debug(f'***source_name={selectbox_sources}, state={selectbox_states}')
         src = opd.Source(source_name=selectbox_sources, state=selectbox_states)        
         logger.debug("Downloading data from URL")
-        logger.debug(f"Table type is {selectbox_table_types} and year is {selected_year}")
+        logger.debug(f"Table type is {selected_table} and year is {selected_year}")
 
         record_count = None
         if selected_rows.iloc[0]["DataType"] not in ["CSV","Excel"]:
+            wait_text = "Retrieving Data..."
             with st.spinner("Retrieving record count..."):
-                record_count = src.get_count(year=selected_year, table_type=selectbox_table_types, agency=agency_filter)
+                record_count = src.get_count(year=selected_year, table_type=selected_table, agency=agency_filter)
+        else:
+            wait_text = "Retrieving Data... (Large datasets may )"
 
         logger.debug(f"record_count is {record_count}")
-
-        wait_text = "Retrieving Data..."
-        no_data_str = f"No data found for the {selectbox_table_types} table for {selectbox_sources} in {selected_year}"
+        no_data_str = f"No data found for the {selected_table} table for {selectbox_sources} in {selected_year}"
         no_data_str = f"{no_data_str} when filtering for agency {agency_filter}"
         if record_count is None:
             with st.spinner(wait_text):
-                data_from_url = src.load_from_url(year=selected_year, table_type=selectbox_table_types, agency=agency_filter).table
+                data_from_url = src.load_from_url(year=selected_year, table_type=selected_table, agency=agency_filter).table
 
             if len(data_from_url)==0:
                 logger.debug("Table is empty")
@@ -191,7 +227,7 @@ with st.empty():
             nbatches = math.ceil(record_count / batch_size)
             pbar = st.progress(0, text=wait_text)
             iter = 0
-            for tbl in src.load_from_url_gen(year=selected_year, table_type=selectbox_table_types, nbatch=batch_size, agency=agency_filter):
+            for tbl in src.load_from_url_gen(year=selected_year, table_type=selected_table, nbatch=batch_size, agency=agency_filter):
                 iter+=1
                 df_list.append(tbl.table)
                 pbar.progress(iter / nbatches, text=wait_text)
@@ -234,7 +270,7 @@ with expander_container:
             "coverage_start":"Coverage Start",
             "coverage_end":"Coverage End (Est.)",
             "source_url":"Source URL",
-            "readme":"Dictionary URL",
+            "readme":"Data Dictionary URL",
         }
     ds = selected_rows.rename(columns=map)
     show_table = False
@@ -249,8 +285,8 @@ with expander_container:
         no_date_str = "N/A" if no_date else "Present (Approx.)"
         ds["Coverage End (Est.)"] = ds["Coverage End (Est.)"].strftime(r"%B %d, %Y") \
             if pd.notnull(ds["Coverage End (Est.)"]) else no_date_str
-        ds["Dictionary URL"] = "No direct URL recorded. Check Source URL." \
-            if pd.isnull(ds["Dictionary URL"]) else ds["Dictionary URL"]
+        ds["Data Dictionary URL"] = "No direct URL recorded. Check Source URL." \
+            if pd.isnull(ds["Data Dictionary URL"]) else ds["Data Dictionary URL"]
         text=""
         for idx in ds.index:
             text+=f"**{idx}**: {ds[idx]}  \n"
@@ -268,4 +304,10 @@ if st.session_state["preview"] is not None:
     st.subheader("Preview")
     st.dataframe(data=st.session_state["preview"])
 
-logger.debug(f'Done with rendering dataframe with environment variable set = {os.environ["SODAPY_API_KEY"] == st.secrets["SODAPY_API_KEY"]}')
+    st.info("Questions or Suggestions? Feel free to reach out to us on our "
+            "[discussion board](https://github.com/openpolicedata/openpolicedata/discussions).\n\n"+
+            "NOTE: All data is downloaded directly from the source and is not altered in any way. "+
+            "Column names and codes may be difficult to understand. Check the data dictionary and "+
+            "source URLs for more information. If you still are having issues, feel free to reach out to us at the link above.")
+
+logger.debug(f'Done with rendering dataframe')
