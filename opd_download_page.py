@@ -303,11 +303,16 @@ if st.session_state["preview"] is not None:
     st.divider()
     st.subheader("Preview")
     st.dataframe(data=st.session_state["preview"])
+else:
+    st.divider()
+    # Add some space
+    for _ in range(0):
+        st.text("  ")
 
-    st.info("Questions or Suggestions? Feel free to reach out to us on our "
-            "[discussion board](https://github.com/openpolicedata/openpolicedata/discussions).\n\n"+
-            "NOTE: All data is downloaded directly from the source and is not altered in any way. "+
-            "Column names and codes may be difficult to understand. Check the data dictionary and "+
-            "source URLs for more information. If you still are having issues, feel free to reach out to us at the link above.")
+st.info("Questions or Suggestions? Feel free to reach out to us on our "
+        "[discussion board](https://github.com/openpolicedata/openpolicedata/discussions).\n\n"+
+        "NOTE: All data is downloaded directly from the source and is not altered in any way. "+
+        "Column names and codes may be difficult to understand. Check the data dictionary and "+
+        "source URLs for more information. If you still are having issues, feel free to reach out to us at the link above.")
 
 logger.debug(f'Done with rendering dataframe')
