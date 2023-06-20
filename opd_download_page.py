@@ -309,7 +309,7 @@ else:
     for _ in range(0):
         st.text("  ")
 
-st.info("Questions or Suggestions? Feel free to reach out to us on our "
+st.info("Questions or Suggestions? Please reach out to us on our "
         "[discussion board](https://github.com/openpolicedata/openpolicedata/discussions).\n\n"+
         "NOTE: All data is downloaded directly from the source and is not altered in any way. "+
         "Column names and codes may be difficult to understand. Check the data dictionary and "+
