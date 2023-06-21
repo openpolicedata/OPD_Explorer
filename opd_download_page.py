@@ -315,4 +315,4 @@ st.info("Questions or Suggestions? Please reach out to us on our "
         "Column names and codes may be difficult to understand. Check the data dictionary and "+
         "source URLs for more information. If you still are having issues, feel free to reach out to us at the link above.")
 
-logger.debug(f'Done with rendering dataframe')
+logger.debug(f'Done with rendering dataframe using OPD Version {opd.__version__}')
