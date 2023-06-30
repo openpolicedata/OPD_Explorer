@@ -1,0 +1,1018 @@
+
+[     UTC     ] Logs for openpolicedata.streamlit.app/
+────────────────────────────────────────────────────────────────────────────────────────
+[20:04:18] 🚀 Starting up repository: 'opd_explorer', branch: 'main', main module: 'opd_download_page.py'
+[20:04:18] 🐙 Cloning repository...
+[20:04:20] 🐙 Cloning into '/app/opd_explorer'...
+
+[20:04:20] 🐙 Cloned repository!
+[20:04:20] 🐙 Pulling code changes from Github...
+[20:04:21] 📦 Processing dependencies...
+
+──────────────────────────────────────── pip ───────────────────────────────────────────
+
+Collecting openpolicedata
+  Downloading openpolicedata-0.5.5-py3-none-any.whl (35 kB)
+Collecting packaging
+  Downloading packaging-23.1-py3-none-any.whl (48 kB)
+     ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 48.9/48.9 KB 154.6 MB/s eta 0:00:00[2023-06-22 20:04:22.223186] 
+Collecting pandas
+  Downloading pandas-2.0.2-cp39-cp39-manylinux_2_17_x86_64.manylinux2014_x86_64.whl (12.4 MB)
+     ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 12.4/12.4 MB 76.5 MB/s eta 0:00:00[2023-06-22 20:04:22.803761] 
+Collecting streamlit
+  Downloading streamlit-1.23.1-py2.py3-none-any.whl (8.9 MB)
+     ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 8.9/8.9 MB 132.7 MB/s eta 0:00:00[2023-06-22 20:04:23.061713] 
+Collecting requests
+  Downloading requests-2.31.0-py3-none-any.whl (62 kB)
+     ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 62.6/62.6 KB 168.9 MB/s eta 0:00:00[2023-06-22 20:04:23.204803] 
+Collecting openpyxl
+  Downloading openpyxl-3.1.2-py2.py3-none-any.whl (249 kB)
+     ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 250.0/250.0 KB 160.9 MB/s eta 0:00:00[2023-06-22 20:04:23.292007] 
+Collecting sodapy
+  Downloading sodapy-2.2.0-py2.py3-none-any.whl (15 kB)
+Collecting tqdm
+  Downloading tqdm-4.65.0-py3-none-any.whl (77 kB)
+     ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 77.1/77.1 KB 184.6 MB/s eta 0:00:00[2023-06-22 20:04:23.576079] 
+Collecting xlrd
+  Downloading xlrd-2.0.1-py2.py3-none-any.whl (96 kB)
+     ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 96.5/96.5 KB 200.7 MB/s eta 0:00:00[2023-06-22 20:04:23.637242] 
+Collecting numpy
+  Downloading numpy-1.25.0-cp39-cp39-manylinux_2_17_x86_64.manylinux2014_x86_64.whl (17.7 MB)
+     ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 17.7/17.7 MB 212.9 MB/s eta 0:00:00[2023-06-22 20:04:24.239111] 
+Collecting tzdata>=2022.1
+  Downloading tzdata-2023.3-py2.py3-none-any.whl (341 kB)
+     ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 341.8/341.8 KB 181.2 MB/s eta 0:00:00[2023-06-22 20:04:24.436418] 
+Collecting pytz>=2020.1
+  Downloading pytz-2023.3-py2.py3-none-any.whl (502 kB)
+     ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 502.3/502.3 KB 151.4 MB/s eta 0:00:00[2023-06-22 20:04:24.613549] 
+Collecting python-dateutil>=2.8.2
+  Downloading python_dateutil-2.8.2-py2.py3-none-any.whl (247 kB)
+     ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 247.7/247.7 KB 152.0 MB/s eta 0:00:00[2023-06-22 20:04:24.688391] 
+Collecting pydeck<1,>=0.1.dev5
+  Downloading pydeck-0.8.1b0-py2.py3-none-any.whl (4.8 MB)
+     ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 4.8/4.8 MB 134.2 MB/s eta 0:00:00[2023-06-22 20:04:24.845159] 
+Collecting watchdog
+  Downloading watchdog-3.0.0-py3-none-manylinux2014_x86_64.whl (82 kB)
+     ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 82.1/82.1 KB 191.2 MB/s eta 0:00:00[2023-06-22 20:04:25.067153] 
+Collecting gitpython!=3.1.19,<4,>=3
+  Downloading GitPython-3.1.31-py3-none-any.whl (184 kB)
+     ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 184.3/184.3 KB 132.4 MB/s eta 0:00:00[2023-06-22 20:04:25.146078] 
+Collecting altair<6,>=4.0
+  Downloading altair-5.0.1-py3-none-any.whl (471 kB)
+     ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 471.5/471.5 KB 148.4 MB/s eta 0:00:00[2023-06-22 20:04:25.247041] 
+Collecting typing-extensions<5,>=4.0.1
+  Downloading typing_extensions-4.6.3-py3-none-any.whl (31 kB)
+Collecting tornado<7,>=6.0.3
+  Downloading tornado-6.3.2-cp38-abi3-manylinux_2_5_x86_64.manylinux1_x86_64.manylinux_2_17_x86_64.manylinux2014_x86_64.whl (426 kB)
+     ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 426.9/426.9 KB 219.8 MB/s eta 0:00:00[2023-06-22 20:04:25.438537] 
+Collecting blinker<2,>=1.0.0
+  Downloading blinker-1.6.2-py3-none-any.whl (13 kB)
+Collecting protobuf<5,>=3.20
+  Downloading protobuf-4.23.3-cp37-abi3-manylinux2014_x86_64.whl (304 kB)
+     ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 304.5/304.5 KB 144.6 MB/s eta 0:00:00[2023-06-22 20:04:26.163985] 
+Collecting pympler<2,>=0.9
+  Downloading Pympler-1.0.1-py3-none-any.whl (164 kB)
+     ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 164.8/164.8 KB 151.1 MB/s eta 0:00:00[2023-06-22 20:04:26.222739] 
+Collecting toml<2
+  Downloading toml-0.10.2-py2.py3-none-any.whl (16 kB)
+Collecting pyarrow>=4.0
+  Downloading pyarrow-12.0.1-cp39-cp39-manylinux_2_17_x86_64.manylinux2014_x86_64.whl (39.0 MB)
+     ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 39.0/39.0 MB 116.5 MB/s eta 0:00:00[2023-06-22 20:04:26.726100] 
+Collecting tzlocal<5,>=1.1
+  Downloading tzlocal-4.3.1-py3-none-any.whl (20 kB)
+Collecting importlib-metadata<7,>=1.4
+  Downloading importlib_metadata-6.7.0-py3-none-any.whl (22 kB)
+Collecting tenacity<9,>=8.0.0
+  Downloading tenacity-8.2.2-py3-none-any.whl (24 kB)
+Collecting pillow<10,>=6.2.0
+  Downloading Pillow-9.5.0-cp39-cp39-manylinux_2_28_x86_64.whl (3.4 MB)
+     ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 3.4/3.4 MB 129.5 MB/s eta 0:00:00[2023-06-22 20:04:27.672154] 
+Collecting validators<1,>=0.2
+  Downloading validators-0.20.0.tar.gz (30 kB)
+  Preparing metadata (setup.py): started
+  Preparing metadata (setup.py): finished with status 'done'
+Collecting click<9,>=7.0
+  Downloading click-8.1.3-py3-none-any.whl (96 kB)
+     ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 96.6/96.6 KB 111.2 MB/s eta 0:00:00[2023-06-22 20:04:28.234672] 
+Collecting rich<14,>=10.11.0
+  Downloading rich-13.4.2-py3-none-any.whl (239 kB)
+     ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 239.4/239.4 KB 168.3 MB/s eta 0:00:00[2023-06-22 20:04:28.431098] 
+Collecting cachetools<6,>=4.0
+  Downloading cachetools-5.3.1-py3-none-any.whl (9.3 kB)
+Collecting jinja2
+  Downloading Jinja2-3.1.2-py3-none-any.whl (133 kB)
+     ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 133.1/133.1 KB 137.7 MB/s eta 0:00:00[2023-06-22 20:04:28.619179] 
+Collecting toolz
+  Downloading toolz-0.12.0-py3-none-any.whl (55 kB)
+     ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 55.8/55.8 KB 167.4 MB/s eta 0:00:00[2023-06-22 20:04:28.664816] 
+Collecting jsonschema>=3.0
+  Downloading jsonschema-4.17.3-py3-none-any.whl (90 kB)
+     ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 90.4/90.4 KB 175.5 MB/s eta 0:00:00[2023-06-22 20:04:28.745901] 
+Collecting gitdb<5,>=4.0.1
+  Downloading gitdb-4.0.10-py3-none-any.whl (62 kB)
+     ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 62.7/62.7 KB 110.5 MB/s eta 0:00:00[2023-06-22 20:04:28.805507] 
+Collecting zipp>=0.5
+  Downloading zipp-3.15.0-py3-none-any.whl (6.8 kB)
+Collecting six>=1.5
+  Downloading six-1.16.0-py2.py3-none-any.whl (11 kB)
+Collecting idna<4,>=2.5
+  Downloading idna-3.4-py3-none-any.whl (61 kB)
+     ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 61.5/61.5 KB 152.4 MB/s eta 0:00:00[2023-06-22 20:04:29.191476] 
+Collecting urllib3<3,>=1.21.1
+  Downloading urllib3-2.0.3-py3-none-any.whl (123 kB)
+     ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 123.6/123.6 KB 211.1 MB/s eta 0:00:00[2023-06-22 20:04:29.327028] 
+Collecting charset-normalizer<4,>=2
+  Downloading charset_normalizer-3.1.0-cp39-cp39-manylinux_2_17_x86_64.manylinux2014_x86_64.whl (199 kB)
+     ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 199.2/199.2 KB 212.8 MB/s eta 0:00:00[2023-06-22 20:04:29.499275] 
+Collecting certifi>=2017.4.17
+  Downloading certifi-2023.5.7-py3-none-any.whl (156 kB)
+     ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 157.0/157.0 KB 128.7 MB/s eta 0:00:00[2023-06-22 20:04:29.593197] 
+Collecting markdown-it-py>=2.2.0
+  Downloading markdown_it_py-3.0.0-py3-none-any.whl (87 kB)
+     ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 87.5/87.5 KB 159.2 MB/s eta 0:00:00[2023-06-22 20:04:29.689347] 
+Collecting pygments<3.0.0,>=2.13.0
+  Downloading Pygments-2.15.1-py3-none-any.whl (1.1 MB)
+     ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 1.1/1.1 MB 234.7 MB/s eta 0:00:00
+Collecting pytz-deprecation-shim
+  Downloading pytz_deprecation_shim-0.1.0.post0-py2.py3-none-any.whl (15 kB)
+Collecting decorator>=3.4.0
+  Downloading decorator-5.1.1-py3-none-any.whl (9.1 kB)
+Collecting et-xmlfile
+  Downloading et_xmlfile-1.1.0-py3-none-any.whl (4.7 kB)
+Collecting smmap<6,>=3.0.1
+  Downloading smmap-5.0.0-py3-none-any.whl (24 kB)
+Collecting MarkupSafe>=2.0
+  Downloading MarkupSafe-2.1.3-cp39-cp39-manylinux_2_17_x86_64.manylinux2014_x86_64.whl (25 kB)
+Collecting attrs>=17.4.0
+  Downloading attrs-23.1.0-py3-none-any.whl (61 kB)
+     ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 61.2/61.2 KB 129.5 MB/s eta 0:00:00
+Collecting pyrsistent!=0.17.0,!=0.17.1,!=0.17.2,>=0.14.0
+  Downloading pyrsistent-0.19.3-py3-none-any.whl (57 kB)
+     ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 57.5/57.5 KB 164.2 MB/s eta 0:00:00[2023-06-22 20:04:30.453020] 
+Collecting mdurl~=0.1
+  Downloading mdurl-0.1.2-py3-none-any.whl (10.0 kB)
+Building wheels for collected packages: validators
+  Building wheel for validators (setup.py): started
+  Building wheel for validators (setup.py): finished with status 'done'
+  Created wheel for validators: filename=validators-0.20.0-py3-none-any.whl size=19579 sha256=a8f604be095a0f9c319b7fdbb419b3bac4d80974c6e5d3102a1bfdd8969fcde1
+  Stored in directory: /tmp/pip-ephem-wheel-cache-9lccetos/wheels/2d/f0/a8/1094fca7a7e5d0d12ff56e0c64675d72aa5cc81a5fc200e849
+Successfully built validators
+Installing collected packages: pytz, zipp, xlrd, watchdog, urllib3, tzdata, typing-extensions, tqdm, tornado, toolz, toml, tenacity, smmap, six, pyrsistent, pympler, pygments, protobuf, pillow, packaging, numpy, mdurl, MarkupSafe, idna, et-xmlfile, decorator, click, charset-normalizer, certifi, cachetools, blinker, attrs, validators, requests, pytz-deprecation-shim, python-dateutil, pyarrow, openpyxl, markdown-it-py, jsonschema, jinja2, importlib-metadata, gitdb, tzlocal, sodapy, rich, pydeck, pandas, gitpython, openpolicedata, altair, streamlit
+Successfully installed MarkupSafe-2.1.3 altair-5.0.1 attrs-23.1.0 blinker-1.6.2 cachetools-5.3.1 certifi-2023.5.7 charset-normalizer-3.1.0 click-8.1.3 decorator-5.1.1 et-xmlfile-1.1.0 gitdb-4.0.10 gitpython-3.1.31 idna-3.4 importlib-metadata-6.7.0 jinja2-3.1.2 jsonschema-4.17.3 markdown-it-py-3.0.0 mdurl-0.1.2 numpy-1.25.0 openpolicedata-0.5.5 openpyxl-3.1.2 packaging-23.1 pandas-2.0.2 pillow-9.5.0 protobuf-4.23.3 pyarrow-12.0.1 pydeck-0.8.1b0 pygments-2.15.1 pympler-1.0.1 pyrsistent-0.19.3 python-dateutil-2.8.2 pytz-2023.3 pytz-deprecation-shim-0.1.0.post0 requests-2.31.0 rich-13.4.2 six-1.16.0 smmap-5.0.0 sodapy-2.2.0 streamlit-1.23.1 tenacity-8.2.2 toml-0.10.2 toolz-0.12.0 tornado-6.3.2 tqdm-4.65.0 typing-extensions-4.6.3 tzdata-2023.3 tzlocal-4.3.1 urllib3-2.0.3 validators-0.20.0 watchdog-3.0.0 xlrd-2.0.1 zipp-3.15.0
+WARNING: You are using pip version 22.0.3; however, version 23.1.2 is available.
+You should consider upgrading via the '/home/appuser/venv/bin/python -m pip install --upgrade pip' command.
+Checking if Streamlit is installed
+Found Streamlit version 1.23.1 in the environment
+
+────────────────────────────────────────────────────────────────────────────────────────
+
+[20:04:49] 🐍 Python dependencies were installed from /app/opd_explorer/requirements.txt using pip.
+Check if streamlit is installed
+Streamlit is already installed
+[20:04:51] 📦 Processed dependencies!
+
+Collecting usage statistics. To deactivate, set browser.gatherUsageStats to False.
+
+
+
+
+selectbox_states = Arizona
+Updated years to [2023, 2022, 2021, 2020, 2019, 2018, 2017, 2016, 2015, 2014, 2013, 2012, 2011, 2010, 2009, 2008, 2007, 2006]
+Selected year is 2023 with type <class 'int'>
+Old selection = None
+New selection = ['Arizona', 'Gilbert', 'CALLS FOR SERVICE', '2023', None]
+Resetting download button
+Agency name is Gilbert and agency filter is None
+Done with rendering dataframe using OPD Version 0.5.5
+selectbox_states = Arizona
+Selected year is 2023 with type <class 'int'>
+Old selection = None
+New selection = ['Arizona', 'Gilbert', 'CALLS FOR SERVICE', '2023', None]
+Resetting download button
+Agency name is Gilbert and agency filter is None
+Done with rendering dataframe using OPD Version 0.5.5
+selectbox_states = Arizona
+Selected year is 2023 with type <class 'int'>
+Old selection = None
+New selection = ['Arizona', 'Gilbert', 'CALLS FOR SERVICE', '2023', None]
+Resetting download button
+Agency name is Gilbert and agency filter is None
+Done with rendering dataframe using OPD Version 0.5.5
+selectbox_states = Arizona
+Selected year is 2023 with type <class 'int'>
+Old selection = None
+New selection = ['Arizona', 'Gilbert', 'CALLS FOR SERVICE', '2023', None]
+Resetting download button
+Agency name is Gilbert and agency filter is None
+Done with rendering dataframe using OPD Version 0.5.5
+selectbox_states = Arizona
+Selected year is 2023 with type <class 'int'>
+Old selection = ['Arizona', 'Gilbert', 'CALLS FOR SERVICE', '2023', None]
+New selection = ['Arizona', 'Gilbert', 'CALLS FOR SERVICE', '2023', None]
+Agency name is Gilbert and agency filter is None
+Done with rendering dataframe using OPD Version 0.5.5
+selectbox_states = Arizona
+Selected year is 2023 with type <class 'int'>
+Old selection = ['Arizona', 'Gilbert', 'CALLS FOR SERVICE', '2023', None]
+New selection = ['Arizona', 'Gilbert', 'CALLS FOR SERVICE', '2023', None]
+Agency name is Gilbert and agency filter is None
+Done with rendering dataframe using OPD Version 0.5.5
+selectbox_states = Arizona
+Selected year is 2023 with type <class 'int'>
+Old selection = ['Arizona', 'Gilbert', 'CALLS FOR SERVICE', '2023', None]
+New selection = ['Arizona', 'Gilbert', 'CALLS FOR SERVICE', '2023', None]
+Agency name is Gilbert and agency filter is None
+Done with rendering dataframe using OPD Version 0.5.5
+selectbox_states = Arizona
+Selected year is 2023 with type <class 'int'>
+Old selection = ['Arizona', 'Gilbert', 'CALLS FOR SERVICE', '2023', None]
+New selection = ['Arizona', 'Gilbert', 'CALLS FOR SERVICE', '2023', None]
+Agency name is Gilbert and agency filter is None
+Done with rendering dataframe using OPD Version 0.5.5
+selectbox_states = Arizona
+Selected year is 2023 with type <class 'int'>
+Old selection = ['Arizona', 'Gilbert', 'CALLS FOR SERVICE', '2023', None]
+New selection = ['Arizona', 'Gilbert', 'CALLS FOR SERVICE', '2023', None]
+Agency name is Gilbert and agency filter is None
+Done with rendering dataframe using OPD Version 0.5.5
+selectbox_states = Arizona
+Selected year is 2023 with type <class 'int'>
+Old selection = ['Arizona', 'Gilbert', 'CALLS FOR SERVICE', '2023', None]
+New selection = ['Arizona', 'Gilbert', 'CALLS FOR SERVICE', '2023', None]
+Agency name is Gilbert and agency filter is None
+Done with rendering dataframe using OPD Version 0.5.5
+selectbox_states = Arizona
+Selected year is 2023 with type <class 'int'>
+Old selection = ['Arizona', 'Gilbert', 'CALLS FOR SERVICE', '2023', None]
+New selection = ['Arizona', 'Gilbert', 'CALLS FOR SERVICE', '2023', None]
+Agency name is Gilbert and agency filter is None
+Done with rendering dataframe using OPD Version 0.5.5
+selectbox_states = Arizona
+Selected year is 2023 with type <class 'int'>
+Old selection = ['Arizona', 'Gilbert', 'CALLS FOR SERVICE', '2023', None]
+New selection = ['Arizona', 'Gilbert', 'CALLS FOR SERVICE', '2023', None]
+Agency name is Gilbert and agency filter is None
+Done with rendering dataframe using OPD Version 0.5.5
+selectbox_states = Arizona
+Selected year is 2023 with type <class 'int'>
+Old selection = ['Arizona', 'Gilbert', 'CALLS FOR SERVICE', '2023', None]
+New selection = ['Arizona', 'Gilbert', 'CALLS FOR SERVICE', '2023', None]
+Agency name is Gilbert and agency filter is None
+Done with rendering dataframe using OPD Version 0.5.5
+selectbox_states = Arizona
+Selected year is 2023 with type <class 'int'>
+Old selection = None
+New selection = ['Arizona', 'Gilbert', 'CALLS FOR SERVICE', '2023', None]
+Resetting download button
+Agency name is Gilbert and agency filter is None
+Done with rendering dataframe using OPD Version 0.5.5
+selectbox_states = Arizona
+Selected year is 2023 with type <class 'int'>
+Old selection = ['Arizona', 'Gilbert', 'CALLS FOR SERVICE', '2023', None]
+New selection = ['Arizona', 'Gilbert', 'CALLS FOR SERVICE', '2023', None]
+Agency name is Gilbert and agency filter is None
+Done with rendering dataframe using OPD Version 0.5.5
+selectbox_states = Arizona
+Selected year is 2023 with type <class 'int'>
+Old selection = ['Arizona', 'Gilbert', 'CALLS FOR SERVICE', '2023', None]
+New selection = ['Arizona', 'Gilbert', 'CALLS FOR SERVICE', '2023', None]
+Agency name is Gilbert and agency filter is None
+Done with rendering dataframe using OPD Version 0.5.5
+selectbox_states = Arizona
+Selected year is 2023 with type <class 'int'>
+Old selection = ['Arizona', 'Gilbert', 'CALLS FOR SERVICE', '2023', None]
+New selection = ['Arizona', 'Gilbert', 'CALLS FOR SERVICE', '2023', None]
+Agency name is Gilbert and agency filter is None
+Done with rendering dataframe using OPD Version 0.5.5
+selectbox_states = Arizona
+Selected year is 2023 with type <class 'int'>
+Old selection = ['Arizona', 'Gilbert', 'CALLS FOR SERVICE', '2023', None]
+New selection = ['Arizona', 'Gilbert', 'CALLS FOR SERVICE', '2023', None]
+Agency name is Gilbert and agency filter is None
+Done with rendering dataframe using OPD Version 0.5.5
+selectbox_states = Arizona
+Selected year is 2023 with type <class 'int'>
+Old selection = ['Arizona', 'Gilbert', 'CALLS FOR SERVICE', '2023', None]
+New selection = ['Arizona', 'Gilbert', 'CALLS FOR SERVICE', '2023', None]
+Agency name is Gilbert and agency filter is None
+Done with rendering dataframe using OPD Version 0.5.5
+selectbox_states = Arizona
+Selected year is 2023 with type <class 'int'>
+Old selection = ['Arizona', 'Gilbert', 'CALLS FOR SERVICE', '2023', None]
+New selection = ['Arizona', 'Gilbert', 'CALLS FOR SERVICE', '2023', None]
+Agency name is Gilbert and agency filter is None
+Done with rendering dataframe using OPD Version 0.5.5
+selectbox_states = Arizona
+Selected year is 2023 with type <class 'int'>
+Old selection = ['Arizona', 'Gilbert', 'CALLS FOR SERVICE', '2023', None]
+New selection = ['Arizona', 'Gilbert', 'CALLS FOR SERVICE', '2023', None]
+Agency name is Gilbert and agency filter is None
+Done with rendering dataframe using OPD Version 0.5.5
+selectbox_states = Arizona
+Selected year is 2023 with type <class 'int'>
+Old selection = ['Arizona', 'Gilbert', 'CALLS FOR SERVICE', '2023', None]
+New selection = ['Arizona', 'Gilbert', 'CALLS FOR SERVICE', '2023', None]
+Agency name is Gilbert and agency filter is None
+Done with rendering dataframe using OPD Version 0.5.5
+selectbox_states = Arizona
+Selected year is 2023 with type <class 'int'>
+Old selection = ['Arizona', 'Gilbert', 'CALLS FOR SERVICE', '2023', None]
+New selection = ['Arizona', 'Gilbert', 'CALLS FOR SERVICE', '2023', None]
+Agency name is Gilbert and agency filter is None
+Done with rendering dataframe using OPD Version 0.5.5
+selectbox_states = Arizona
+Selected year is 2023 with type <class 'int'>
+Old selection = ['Arizona', 'Gilbert', 'CALLS FOR SERVICE', '2023', None]
+New selection = ['Arizona', 'Gilbert', 'CALLS FOR SERVICE', '2023', None]
+Agency name is Gilbert and agency filter is None
+Done with rendering dataframe using OPD Version 0.5.5
+selectbox_states = Arizona
+Selected year is 2023 with type <class 'int'>
+Old selection = ['Arizona', 'Gilbert', 'CALLS FOR SERVICE', '2023', None]
+New selection = ['Arizona', 'Gilbert', 'CALLS FOR SERVICE', '2023', None]
+Agency name is Gilbert and agency filter is None
+Done with rendering dataframe using OPD Version 0.5.5
+selectbox_states = Arizona
+Selected year is 2023 with type <class 'int'>
+Old selection = ['Arizona', 'Gilbert', 'CALLS FOR SERVICE', '2023', None]
+New selection = ['Arizona', 'Gilbert', 'CALLS FOR SERVICE', '2023', None]
+Agency name is Gilbert and agency filter is None
+Done with rendering dataframe using OPD Version 0.5.5
+selectbox_states = Arizona
+Selected year is 2023 with type <class 'int'>
+Old selection = ['Arizona', 'Gilbert', 'CALLS FOR SERVICE', '2023', None]
+New selection = ['Arizona', 'Gilbert', 'CALLS FOR SERVICE', '2023', None]
+Agency name is Gilbert and agency filter is None
+Done with rendering dataframe using OPD Version 0.5.5
+selectbox_states = Arizona
+Selected year is 2023 with type <class 'int'>
+Old selection = ['Arizona', 'Gilbert', 'CALLS FOR SERVICE', '2023', None]
+New selection = ['Arizona', 'Gilbert', 'CALLS FOR SERVICE', '2023', None]
+Agency name is Gilbert and agency filter is None
+Done with rendering dataframe using OPD Version 0.5.5
+selectbox_states = Arizona
+Selected year is 2023 with type <class 'int'>
+Old selection = ['Arizona', 'Gilbert', 'CALLS FOR SERVICE', '2023', None]
+New selection = ['Arizona', 'Gilbert', 'CALLS FOR SERVICE', '2023', None]
+Agency name is Gilbert and agency filter is None
+Done with rendering dataframe using OPD Version 0.5.5
+selectbox_states = Arizona
+Selected year is 2023 with type <class 'int'>
+Old selection = ['Arizona', 'Gilbert', 'CALLS FOR SERVICE', '2023', None]
+New selection = ['Arizona', 'Gilbert', 'CALLS FOR SERVICE', '2023', None]
+Agency name is Gilbert and agency filter is None
+Done with rendering dataframe using OPD Version 0.5.5
+selectbox_states = Arizona
+Selected year is 2023 with type <class 'int'>
+Old selection = ['Arizona', 'Gilbert', 'CALLS FOR SERVICE', '2023', None]
+New selection = ['Arizona', 'Gilbert', 'CALLS FOR SERVICE', '2023', None]
+Agency name is Gilbert and agency filter is None
+Done with rendering dataframe using OPD Version 0.5.5
+selectbox_states = Arizona
+Selected year is 2023 with type <class 'int'>
+Old selection = ['Arizona', 'Gilbert', 'CALLS FOR SERVICE', '2023', None]
+New selection = ['Arizona', 'Gilbert', 'CALLS FOR SERVICE', '2023', None]
+Agency name is Gilbert and agency filter is None
+Done with rendering dataframe using OPD Version 0.5.5
+selectbox_states = Arizona
+Selected year is 2023 with type <class 'int'>
+Old selection = ['Arizona', 'Gilbert', 'CALLS FOR SERVICE', '2023', None]
+New selection = ['Arizona', 'Gilbert', 'CALLS FOR SERVICE', '2023', None]
+Agency name is Gilbert and agency filter is None
+Done with rendering dataframe using OPD Version 0.5.5
+selectbox_states = Arizona
+Selected year is 2023 with type <class 'int'>
+Old selection = ['Arizona', 'Gilbert', 'CALLS FOR SERVICE', '2023', None]
+New selection = ['Arizona', 'Gilbert', 'CALLS FOR SERVICE', '2023', None]
+Agency name is Gilbert and agency filter is None
+Done with rendering dataframe using OPD Version 0.5.5
+selectbox_states = Arizona
+Selected year is 2023 with type <class 'int'>
+Old selection = None
+New selection = ['Arizona', 'Gilbert', 'CALLS FOR SERVICE', '2023', None]
+Resetting download button
+Agency name is Gilbert and agency filter is None
+Done with rendering dataframe using OPD Version 0.5.5
+selectbox_states = Arizona
+Selected year is 2023 with type <class 'int'>
+Old selection = ['Arizona', 'Gilbert', 'CALLS FOR SERVICE', '2023', None]
+New selection = ['Arizona', 'Gilbert', 'CALLS FOR SERVICE', '2023', None]
+Agency name is Gilbert and agency filter is None
+Done with rendering dataframe using OPD Version 0.5.5
+selectbox_states = Arizona
+Selected year is 2023 with type <class 'int'>
+Old selection = ['Arizona', 'Gilbert', 'CALLS FOR SERVICE', '2023', None]
+New selection = ['Arizona', 'Gilbert', 'CALLS FOR SERVICE', '2023', None]
+Agency name is Gilbert and agency filter is None
+Done with rendering dataframe using OPD Version 0.5.5
+selectbox_states = Arizona
+Selected year is 2023 with type <class 'int'>
+Old selection = None
+New selection = ['Arizona', 'Gilbert', 'CALLS FOR SERVICE', '2023', None]
+Resetting download button
+Agency name is Gilbert and agency filter is None
+Done with rendering dataframe using OPD Version 0.5.5
+selectbox_states = Connecticut
+Updated years to [2018, 2017, 2016, 2015, 2014, 2013]
+Selected year is 2018 with type <class 'int'>
+Old selection = ['Arizona', 'Gilbert', 'CALLS FOR SERVICE', '2023', None]
+New selection = ['Connecticut', 'Connecticut', 'TRAFFIC STOPS', '2018', 'ALL']
+Resetting download button
+Agency name is MULTIPLE and agency filter is None
+Done with rendering dataframe using OPD Version 0.5.5
+selectbox_states = Connecticut
+Updated years to [2016, 2015, 2014, 2013]
+Selected year is 2016 with type <class 'int'>
+Old selection = ['Connecticut', 'Connecticut', 'TRAFFIC STOPS', '2018', 'ALL']
+New selection = ['Connecticut', 'Hartford', 'TRAFFIC STOPS', '2016', None]
+Resetting download button
+Agency name is Hartford and agency filter is None
+Done with rendering dataframe using OPD Version 0.5.5
+selectbox_states = Arizona
+Selected year is 2023 with type <class 'int'>
+Old selection = ['Arizona', 'Gilbert', 'CALLS FOR SERVICE', '2023', None]
+New selection = ['Arizona', 'Gilbert', 'CALLS FOR SERVICE', '2023', None]
+Agency name is Gilbert and agency filter is None
+Done with rendering dataframe using OPD Version 0.5.5
+selectbox_states = Arizona
+Selected year is 2023 with type <class 'int'>
+Old selection = ['Arizona', 'Gilbert', 'CALLS FOR SERVICE', '2023', None]
+New selection = ['Arizona', 'Gilbert', 'CALLS FOR SERVICE', '2023', None]
+Agency name is Gilbert and agency filter is None
+Done with rendering dataframe using OPD Version 0.5.5
+selectbox_states = Arizona
+Selected year is 2023 with type <class 'int'>
+Old selection = ['Arizona', 'Gilbert', 'CALLS FOR SERVICE', '2023', None]
+New selection = ['Arizona', 'Gilbert', 'CALLS FOR SERVICE', '2023', None]
+Agency name is Gilbert and agency filter is None
+Done with rendering dataframe using OPD Version 0.5.5
+selectbox_states = Arizona
+Selected year is 2023 with type <class 'int'>
+Old selection = ['Arizona', 'Gilbert', 'CALLS FOR SERVICE', '2023', None]
+New selection = ['Arizona', 'Gilbert', 'CALLS FOR SERVICE', '2023', None]
+Agency name is Gilbert and agency filter is None
+Done with rendering dataframe using OPD Version 0.5.5
+selectbox_states = Arizona
+Selected year is 2023 with type <class 'int'>
+Old selection = ['Arizona', 'Gilbert', 'CALLS FOR SERVICE', '2023', None]
+New selection = ['Arizona', 'Gilbert', 'CALLS FOR SERVICE', '2023', None]
+Agency name is Gilbert and agency filter is None
+Done with rendering dataframe using OPD Version 0.5.5
+selectbox_states = Arizona
+Selected year is 2023 with type <class 'int'>
+Old selection = ['Arizona', 'Gilbert', 'CALLS FOR SERVICE', '2023', None]
+New selection = ['Arizona', 'Gilbert', 'CALLS FOR SERVICE', '2023', None]
+Agency name is Gilbert and agency filter is None
+Done with rendering dataframe using OPD Version 0.5.5
+selectbox_states = Arizona
+Selected year is 2023 with type <class 'int'>
+Old selection = ['Arizona', 'Gilbert', 'CALLS FOR SERVICE', '2023', None]
+New selection = ['Arizona', 'Gilbert', 'CALLS FOR SERVICE', '2023', None]
+Agency name is Gilbert and agency filter is None
+Done with rendering dataframe using OPD Version 0.5.5
+selectbox_states = Arizona
+Selected year is 2023 with type <class 'int'>
+Old selection = ['Arizona', 'Gilbert', 'CALLS FOR SERVICE', '2023', None]
+New selection = ['Arizona', 'Gilbert', 'CALLS FOR SERVICE', '2023', None]
+Agency name is Gilbert and agency filter is None
+Done with rendering dataframe using OPD Version 0.5.5
+selectbox_states = Arizona
+Selected year is 2023 with type <class 'int'>
+Old selection = ['Arizona', 'Gilbert', 'CALLS FOR SERVICE', '2023', None]
+New selection = ['Arizona', 'Gilbert', 'CALLS FOR SERVICE', '2023', None]
+Agency name is Gilbert and agency filter is None
+Done with rendering dataframe using OPD Version 0.5.5
+selectbox_states = Arizona
+Selected year is 2023 with type <class 'int'>
+Old selection = ['Arizona', 'Gilbert', 'CALLS FOR SERVICE', '2023', None]
+New selection = ['Arizona', 'Gilbert', 'CALLS FOR SERVICE', '2023', None]
+Agency name is Gilbert and agency filter is None
+Done with rendering dataframe using OPD Version 0.5.5
+selectbox_states = Arizona
+Selected year is 2023 with type <class 'int'>
+Old selection = None
+New selection = ['Arizona', 'Gilbert', 'CALLS FOR SERVICE', '2023', None]
+Resetting download button
+Agency name is Gilbert and agency filter is None
+Done with rendering dataframe using OPD Version 0.5.5
+selectbox_states = Kansas
+Updated years to [2022, 2021, 2020, 2019, 2018]
+Selected year is 2022 with type <class 'int'>
+selectbox_years != 0, selected_rows =       State SourceName   Agency  ... dataset_id agency_field min_version
+367  Kansas    Wichita  Wichita  ...       <NA>         <NA>         0.4
+
+[1 rows x 18 columns]
+Old selection = ['Arizona', 'Gilbert', 'CALLS FOR SERVICE', '2023', None]
+New selection = ['Kansas', 'Wichita', 'CRASHES', '2022', None]
+Resetting download button
+Agency name is Wichita and agency filter is None
+Done with rendering dataframe using OPD Version 0.5.5
+selectbox_states = Kansas
+Updated years to [2020, 2019, 2018, 2017, 2016, 2015, 2014, 2013, 2012, 2011, 2010, 2009, 2008, 2007, 2006]
+Selected year is 2020 with type <class 'int'>
+Old selection = ['Kansas', 'Wichita', 'CRASHES', '2022', None]
+New selection = ['Kansas', 'Wichita', 'STOPS', '2020', None]
+Resetting download button
+Agency name is Wichita and agency filter is None
+Done with rendering dataframe using OPD Version 0.5.5
+selectbox_states = California
+Updated years to [2017, 2016, 2015, 2014, 2013, 2012]
+Selected year is 2017 with type <class 'int'>
+Old selection = ['Kansas', 'Wichita', 'STOPS', '2020', None]
+New selection = ['California', 'Anaheim', 'TRAFFIC STOPS', '2017', None]
+Resetting download button
+Agency name is Anaheim and agency filter is None
+Done with rendering dataframe using OPD Version 0.5.5
+selectbox_states = Connecticut
+Selected year is 2018 with type <class 'int'>
+Old selection = ['California', 'Anaheim', 'TRAFFIC STOPS', '2017', None]
+New selection = ['Connecticut', 'Connecticut', 'TRAFFIC STOPS', '2018', 'ALL']
+Resetting download button
+Agency name is MULTIPLE and agency filter is None
+Done with rendering dataframe using OPD Version 0.5.5
+selectbox_states = New York
+Updated years to [2023, 2022, 2021, 2020, 2019, 2018, 2017, 2016, 2015, 2014, 2013, 2012, 2011, 2010, 2009, 2008, 2007, 2006, 2005, 2004, 2003, 2002, 2001, 2000, 1999, 1998, 1997, 1996, 1995, 1994]
+Selected year is 2023 with type <class 'int'>
+Old selection = ['Connecticut', 'Connecticut', 'TRAFFIC STOPS', '2018', 'ALL']
+New selection = ['New York', 'Albany', 'COMPLAINTS', '2023', None]
+Resetting download button
+Agency name is Albany and agency filter is None
+Done with rendering dataframe using OPD Version 0.5.5
+selectbox_states = New York
+Selected year is 2005 with type <class 'int'>
+Old selection = ['New York', 'Albany', 'COMPLAINTS', '2023', None]
+New selection = ['New York', 'Albany', 'COMPLAINTS', '2005', None]
+Resetting download button
+Agency name is Albany and agency filter is None
+Done with rendering dataframe using OPD Version 0.5.5
+selectbox_states = New York
+Selected year is 2005 with type <class 'int'>
+Old selection = ['New York', 'Albany', 'COMPLAINTS', '2005', None]
+New selection = ['New York', 'Albany', 'COMPLAINTS', '2005', None]
+Agency name is Albany and agency filter is None
+Done with rendering dataframe using OPD Version 0.5.5
+selectbox_states = New York
+Updated years to [2022, 2021, 2020, 2019, 2018, 2017, 2016, 2015, 2014, 2013, 2012, 2011, 2010, 2009, 2008, 2007, 2006]
+Selected year is 2022 with type <class 'int'>
+Old selection = ['New York', 'Albany', 'COMPLAINTS', '2005', None]
+New selection = ['New York', 'New York City', 'ARRESTS', '2022', None]
+Resetting download button
+Agency name is New York City and agency filter is None
+Done with rendering dataframe using OPD Version 0.5.5
+selectbox_states = New York
+Selected year is 2006 with type <class 'int'>
+Old selection = ['New York', 'New York City', 'ARRESTS', '2022', None]
+New selection = ['New York', 'New York City', 'ARRESTS', '2006', None]
+Resetting download button
+Agency name is New York City and agency filter is None
+Done with rendering dataframe using OPD Version 0.5.5
+selectbox_states = New York
+Selected year is 2006 with type <class 'int'>
+Old selection = ['New York', 'New York City', 'ARRESTS', '2006', None]
+New selection = ['New York', 'New York City', 'ARRESTS', '2006', None]
+Agency name is New York City and agency filter is None
+***source_name=New York City, state=New York
+Downloading data from URL
+Table type is ARRESTS and year is 2006
+record_count is 371934
+Table size is 371934
+Data downloaded from URL. Total of 371934 rows
+csv_text_output len is 95182476  type(csv_text_output) = <class 'bytes'>
+Done with rendering dataframe using OPD Version 0.5.5
+selectbox_states = New York
+Selected year is 2006 with type <class 'int'>
+Old selection = ['New York', 'New York City', 'ARRESTS', '2006', None]
+New selection = ['New York', 'New York City', 'ARRESTS', '2006', None]
+Agency name is New York City and agency filter is None
+Done with rendering dataframe using OPD Version 0.5.5
+selectbox_states = New York
+Selected year is 2006 with type <class 'int'>
+Old selection = ['New York', 'New York City', 'ARRESTS', '2006', None]
+New selection = ['New York', 'New York City', 'ARRESTS', '2006', None]
+Agency name is New York City and agency filter is None
+Done with rendering dataframe using OPD Version 0.5.5
+selectbox_states = Arizona
+Selected year is 2023 with type <class 'int'>
+Old selection = None
+New selection = ['Arizona', 'Gilbert', 'CALLS FOR SERVICE', '2023', None]
+Resetting download button
+Agency name is Gilbert and agency filter is None
+Done with rendering dataframe using OPD Version 0.5.5
+selectbox_states = New Hampshire
+Updated years to [2015, 2014]
+Selected year is 2015 with type <class 'int'>
+Old selection = ['Arizona', 'Gilbert', 'CALLS FOR SERVICE', '2023', None]
+New selection = ['New Hampshire', 'State Patrol', 'TRAFFIC STOPS', '2015', None]
+Resetting download button
+Agency name is State Patrol and agency filter is None
+Done with rendering dataframe using OPD Version 0.5.5
+selectbox_states = Arizona
+Selected year is 2023 with type <class 'int'>
+Old selection = None
+New selection = ['Arizona', 'Gilbert', 'CALLS FOR SERVICE', '2023', None]
+Resetting download button
+Agency name is Gilbert and agency filter is None
+Done with rendering dataframe using OPD Version 0.5.5
+selectbox_states = Arizona
+Selected year is 2023 with type <class 'int'>
+Old selection = None
+New selection = ['Arizona', 'Gilbert', 'CALLS FOR SERVICE', '2023', None]
+Resetting download button
+Agency name is Gilbert and agency filter is None
+Done with rendering dataframe using OPD Version 0.5.5
+selectbox_states = Arizona
+Selected year is 2023 with type <class 'int'>
+Old selection = None
+New selection = ['Arizona', 'Gilbert', 'CALLS FOR SERVICE', '2023', None]
+Resetting download button
+Agency name is Gilbert and agency filter is None
+Done with rendering dataframe using OPD Version 0.5.5
+selectbox_states = Illinois
+Updated years to [2023, 2022, 2021, 2020, 2019, 2018, 2017, 2016, 2015, 2014]
+Selected year is 2023 with type <class 'int'>
+Old selection = ['Arizona', 'Gilbert', 'CALLS FOR SERVICE', '2023', None]
+New selection = ['Illinois', 'Chicago', 'ARRESTS', '2023', None]
+Resetting download button
+Agency name is Chicago and agency filter is None
+Done with rendering dataframe using OPD Version 0.5.5
+selectbox_states = Illinois
+Updated years to [2021, 2020, 2019, 2018, 2017, 2016]
+Selected year is 2021 with type <class 'int'>
+Old selection = ['Illinois', 'Chicago', 'ARRESTS', '2023', None]
+New selection = ['Illinois', 'Evanston', 'ARRESTS', '2021', None]
+Resetting download button
+Agency name is Evanston and agency filter is None
+Done with rendering dataframe using OPD Version 0.5.5
+selectbox_states = Illinois
+Selected year is 2021 with type <class 'int'>
+Old selection = ['Illinois', 'Evanston', 'ARRESTS', '2021', None]
+New selection = ['Illinois', 'Evanston', 'ARRESTS', '2021', None]
+Agency name is Evanston and agency filter is None
+Done with rendering dataframe using OPD Version 0.5.5
+selectbox_states = Illinois
+Selected year is 2021 with type <class 'int'>
+Old selection = ['Illinois', 'Evanston', 'ARRESTS', '2021', None]
+New selection = ['Illinois', 'Evanston', 'ARRESTS', '2021', None]
+Agency name is Evanston and agency filter is None
+***source_name=Evanston, state=Illinois
+Downloading data from URL
+Table type is ARRESTS and year is 2021
+record_count is 646
+Table size is 646
+Data downloaded from URL. Total of 646 rows
+csv_text_output len is 147589  type(csv_text_output) = <class 'bytes'>
+Done with rendering dataframe using OPD Version 0.5.5
+selectbox_states = Arizona
+Selected year is 2023 with type <class 'int'>
+Old selection = None
+New selection = ['Arizona', 'Gilbert', 'CALLS FOR SERVICE', '2023', None]
+Resetting download button
+Agency name is Gilbert and agency filter is None
+Done with rendering dataframe using OPD Version 0.5.5
+selectbox_states = Arizona
+Selected year is 2023 with type <class 'int'>
+Old selection = None
+New selection = ['Arizona', 'Gilbert', 'CALLS FOR SERVICE', '2023', None]
+Resetting download button
+Agency name is Gilbert and agency filter is None
+Done with rendering dataframe using OPD Version 0.5.5
+selectbox_states = Arizona
+Selected year is 2023 with type <class 'int'>
+Old selection = None
+New selection = ['Arizona', 'Gilbert', 'CALLS FOR SERVICE', '2023', None]
+Resetting download button
+Agency name is Gilbert and agency filter is None
+Done with rendering dataframe using OPD Version 0.5.5
+selectbox_states = Arizona
+Selected year is 2023 with type <class 'int'>
+Old selection = None
+New selection = ['Arizona', 'Gilbert', 'CALLS FOR SERVICE', '2023', None]
+Resetting download button
+Agency name is Gilbert and agency filter is None
+Done with rendering dataframe using OPD Version 0.5.5
+selectbox_states = Louisiana
+Updated years to [2023, 2022, 2021, 2020, 2019, 2018, 2017, 2016, 2015, 2014, 2013, 2012, 2011]
+Selected year is 2023 with type <class 'int'>
+selectbox_years != 0, selected_rows =          State   SourceName       Agency  ... dataset_id agency_field min_version
+413  Louisiana  New Orleans  New Orleans  ...  pc5d-tvaw         <NA>        <NA>
+
+[1 rows x 18 columns]
+Old selection = ['Arizona', 'Gilbert', 'CALLS FOR SERVICE', '2023', None]
+New selection = ['Louisiana', 'New Orleans', 'CALLS FOR SERVICE', '2023', None]
+Resetting download button
+Agency name is New Orleans and agency filter is None
+Done with rendering dataframe using OPD Version 0.5.5
+selectbox_states = Arizona
+Selected year is 2023 with type <class 'int'>
+Old selection = None
+New selection = ['Arizona', 'Gilbert', 'CALLS FOR SERVICE', '2023', None]
+Resetting download button
+Agency name is Gilbert and agency filter is None
+Done with rendering dataframe using OPD Version 0.5.5
+selectbox_states = Arizona
+Selected year is 2023 with type <class 'int'>
+Old selection = ['Arizona', 'Gilbert', 'CALLS FOR SERVICE', '2023', None]
+New selection = ['Arizona', 'Gilbert', 'CALLS FOR SERVICE', '2023', None]
+Agency name is Gilbert and agency filter is None
+Done with rendering dataframe using OPD Version 0.5.5
+selectbox_states = Arizona
+Selected year is 2023 with type <class 'int'>
+Old selection = ['Arizona', 'Gilbert', 'CALLS FOR SERVICE', '2023', None]
+New selection = ['Arizona', 'Gilbert', 'CALLS FOR SERVICE', '2023', None]
+Agency name is Gilbert and agency filter is None
+Done with rendering dataframe using OPD Version 0.5.5
+selectbox_states = Arizona
+Selected year is 2023 with type <class 'int'>
+Old selection = None
+New selection = ['Arizona', 'Gilbert', 'CALLS FOR SERVICE', '2023', None]
+Resetting download button
+Agency name is Gilbert and agency filter is None
+Done with rendering dataframe using OPD Version 0.5.5
+selectbox_states = Arizona
+Selected year is 2023 with type <class 'int'>
+Old selection = None
+New selection = ['Arizona', 'Gilbert', 'CALLS FOR SERVICE', '2023', None]
+Resetting download button
+Agency name is Gilbert and agency filter is None
+Done with rendering dataframe using OPD Version 0.5.5
+selectbox_states = Virginia
+Updated years to [2023, 2022, 2021]
+Selected year is 2023 with type <class 'int'>
+Old selection = ['Arizona', 'Gilbert', 'CALLS FOR SERVICE', '2023', None]
+New selection = ['Virginia', 'Dumfries', 'STOPS', '2023', None]
+Resetting download button
+Agency name is Dumfries and agency filter is None
+Done with rendering dataframe using OPD Version 0.5.5
+selectbox_states = Virginia
+Updated years to [2023, 2022, 2021, 2020]
+Selected year is 2023 with type <class 'int'>
+Old selection = ['Virginia', 'Dumfries', 'STOPS', '2023', None]
+New selection = ['Virginia', 'Virginia', 'STOPS', '2023', 'ALL']
+Resetting download button
+Agency name is MULTIPLE and agency filter is None
+Done with rendering dataframe using OPD Version 0.5.5
+selectbox_states = Arizona
+Selected year is 2023 with type <class 'int'>
+Old selection = ['Arizona', 'Gilbert', 'CALLS FOR SERVICE', '2023', None]
+New selection = ['Arizona', 'Gilbert', 'CALLS FOR SERVICE', '2023', None]
+Agency name is Gilbert and agency filter is None
+Done with rendering dataframe using OPD Version 0.5.5
+selectbox_states = Arizona
+Selected year is 2023 with type <class 'int'>
+Old selection = None
+New selection = ['Arizona', 'Gilbert', 'CALLS FOR SERVICE', '2023', None]
+Resetting download button
+Agency name is Gilbert and agency filter is None
+Done with rendering dataframe using OPD Version 0.5.5
+selectbox_states = Virginia
+Selected year is 2023 with type <class 'int'>
+Old selection = ['Arizona', 'Gilbert', 'CALLS FOR SERVICE', '2023', None]
+New selection = ['Virginia', 'Dumfries', 'STOPS', '2023', None]
+Resetting download button
+Agency name is Dumfries and agency filter is None
+Done with rendering dataframe using OPD Version 0.5.5
+selectbox_states = Virginia
+Updated years to [2022, 2021, 2020, 2019, 2018, 2017, 2016]
+Selected year is 2022 with type <class 'int'>
+selectbox_years != 0, selected_rows =         State      SourceName  ... agency_field min_version
+841  Virginia  Fairfax County  ...         <NA>       0.3.1
+
+[1 rows x 18 columns]
+Old selection = ['Virginia', 'Dumfries', 'STOPS', '2023', None]
+New selection = ['Virginia', 'Fairfax County', 'ARRESTS', '2022', None]
+Resetting download button
+Agency name is Fairfax County and agency filter is None
+Done with rendering dataframe using OPD Version 0.5.5
+selectbox_states = Virginia
+Selected year is 2022 with type <class 'int'>
+selectbox_years != 0, selected_rows =         State      SourceName  ... agency_field min_version
+841  Virginia  Fairfax County  ...         <NA>       0.3.1
+
+[1 rows x 18 columns]
+Old selection = ['Virginia', 'Fairfax County', 'ARRESTS', '2022', None]
+New selection = ['Virginia', 'Fairfax County', 'ARRESTS', '2022', None]
+Agency name is Fairfax County and agency filter is None
+***source_name=Fairfax County, state=Virginia
+Downloading data from URL
+Table type is ARRESTS and year is 2022
+record_count is None
+Data downloaded from URL. Total of 25658 rows
+csv_text_output len is 8188334  type(csv_text_output) = <class 'bytes'>
+Done with rendering dataframe using OPD Version 0.5.5
+selectbox_states = Virginia
+Updated years to [2022, 2021, 2020, 2019]
+Selected year is 2022 with type <class 'int'>
+selectbox_years != 0, selected_rows =         State      SourceName  ... agency_field min_version
+845  Virginia  Fairfax County  ...         <NA>       0.3.1
+
+[1 rows x 18 columns]
+Old selection = ['Virginia', 'Fairfax County', 'ARRESTS', '2022', None]
+New selection = ['Virginia', 'Fairfax County', 'TRAFFIC CITATIONS', '2022', None]
+Resetting download button
+Agency name is Fairfax County and agency filter is None
+Done with rendering dataframe using OPD Version 0.5.5
+selectbox_states = Virginia
+Selected year is 2022 with type <class 'int'>
+selectbox_years != 0, selected_rows =         State      SourceName  ... agency_field min_version
+845  Virginia  Fairfax County  ...         <NA>       0.3.1
+
+[1 rows x 18 columns]
+Old selection = ['Virginia', 'Fairfax County', 'TRAFFIC CITATIONS', '2022', None]
+New selection = ['Virginia', 'Fairfax County', 'TRAFFIC CITATIONS', '2022', None]
+Agency name is Fairfax County and agency filter is None
+***source_name=Fairfax County, state=Virginia
+Downloading data from URL
+Table type is TRAFFIC CITATIONS and year is 2022
+record_count is None
+Data downloaded from URL. Total of 46360 rows
+csv_text_output len is 11546212  type(csv_text_output) = <class 'bytes'>
+Done with rendering dataframe using OPD Version 0.5.5
+selectbox_states = Arizona
+Selected year is 2023 with type <class 'int'>
+Old selection = None
+New selection = ['Arizona', 'Gilbert', 'CALLS FOR SERVICE', '2023', None]
+Resetting download button
+Agency name is Gilbert and agency filter is None
+Done with rendering dataframe using OPD Version 0.5.5
+selectbox_states = Arizona
+Selected year is 2023 with type <class 'int'>
+Old selection = None
+New selection = ['Arizona', 'Gilbert', 'CALLS FOR SERVICE', '2023', None]
+Resetting download button
+Agency name is Gilbert and agency filter is None
+Done with rendering dataframe using OPD Version 0.5.5
+selectbox_states = Arizona
+Selected year is 2023 with type <class 'int'>
+Old selection = None
+New selection = ['Arizona', 'Gilbert', 'CALLS FOR SERVICE', '2023', None]
+Resetting download button
+Agency name is Gilbert and agency filter is None
+Done with rendering dataframe using OPD Version 0.5.5
+selectbox_states = Vermont
+Updated years to [2023, 2022, 2021, 2020, 2019, 2018, 2017, 2016, 2015, 2014, 2013, 2012]
+Selected year is 2023 with type <class 'int'>
+Old selection = ['Arizona', 'Gilbert', 'CALLS FOR SERVICE', '2023', None]
+New selection = ['Vermont', 'Burlington', 'ARRESTS', '2023', None]
+Resetting download button
+Agency name is Burlington and agency filter is None
+Done with rendering dataframe using OPD Version 0.5.5
+selectbox_states = Vermont
+Selected year is 2023 with type <class 'int'>
+Old selection = ['Vermont', 'Burlington', 'ARRESTS', '2023', None]
+New selection = ['Vermont', 'Burlington', 'ARRESTS', '2023', None]
+Agency name is Burlington and agency filter is None
+***source_name=Burlington, state=Vermont
+Downloading data from URL
+Table type is ARRESTS and year is 2023
+record_count is 678
+Table size is 678
+Data downloaded from URL. Total of 678 rows
+csv_text_output len is 125555  type(csv_text_output) = <class 'bytes'>
+Done with rendering dataframe using OPD Version 0.5.5
+selectbox_states = Vermont
+Updated years to [2015, 2014, 2013, 2012, 2011]
+Selected year is 2015 with type <class 'int'>
+Old selection = ['Vermont', 'Burlington', 'ARRESTS', '2023', None]
+New selection = ['Vermont', 'Rutland', 'TRAFFIC STOPS', '2015', None]
+Resetting download button
+Agency name is Rutland and agency filter is None
+Done with rendering dataframe using OPD Version 0.5.5
+selectbox_states = Vermont
+Selected year is 2015 with type <class 'int'>
+Old selection = ['Vermont', 'Rutland', 'TRAFFIC STOPS', '2015', None]
+New selection = ['Vermont', 'Rutland', 'TRAFFIC STOPS', '2015', None]
+Agency name is Rutland and agency filter is None
+***source_name=Rutland, state=Vermont
+Downloading data from URL
+Table type is TRAFFIC STOPS and year is 2015
+record_count is None
+Data downloaded from URL. Total of 5394 rows
+csv_text_output len is 1009623  type(csv_text_output) = <class 'bytes'>
+Done with rendering dataframe using OPD Version 0.5.5
+selectbox_states = Vermont
+2023-06-28 20:08:59.061 Uncaught app exception
+Traceback (most recent call last):
+  File "/home/appuser/venv/lib/python3.9/site-packages/streamlit/runtime/caching/storage/in_memory_cache_storage_wrapper.py", line 87, in get
+    entry_bytes = self._read_from_mem_cache(key)
+  File "/home/appuser/venv/lib/python3.9/site-packages/streamlit/runtime/caching/storage/in_memory_cache_storage_wrapper.py", line 137, in _read_from_mem_cache
+    raise CacheStorageKeyNotFoundError("Key not found in mem cache")
+streamlit.runtime.caching.storage.cache_storage_protocol.CacheStorageKeyNotFoundError: Key not found in mem cache
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/home/appuser/venv/lib/python3.9/site-packages/streamlit/runtime/caching/cache_data_api.py", line 596, in read_result
+    pickled_entry = self.storage.get(key)
+  File "/home/appuser/venv/lib/python3.9/site-packages/streamlit/runtime/caching/storage/in_memory_cache_storage_wrapper.py", line 89, in get
+    entry_bytes = self._persist_storage.get(key)
+  File "/home/appuser/venv/lib/python3.9/site-packages/streamlit/runtime/caching/storage/local_disk_cache_storage.py", line 155, in get
+    raise CacheStorageKeyNotFoundError(
+streamlit.runtime.caching.storage.cache_storage_protocol.CacheStorageKeyNotFoundError: Local disk cache storage is disabled (persist=None)
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/home/appuser/venv/lib/python3.9/site-packages/streamlit/runtime/caching/cache_utils.py", line 260, in _get_or_create_cached_value
+    cached_result = cache.read_result(value_key)
+  File "/home/appuser/venv/lib/python3.9/site-packages/streamlit/runtime/caching/cache_data_api.py", line 598, in read_result
+    raise CacheKeyNotFoundError(str(e)) from e
+streamlit.runtime.caching.cache_errors.CacheKeyNotFoundError: Local disk cache storage is disabled (persist=None)
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/home/appuser/venv/lib/python3.9/site-packages/streamlit/runtime/caching/storage/in_memory_cache_storage_wrapper.py", line 87, in get
+    entry_bytes = self._read_from_mem_cache(key)
+  File "/home/appuser/venv/lib/python3.9/site-packages/streamlit/runtime/caching/storage/in_memory_cache_storage_wrapper.py", line 137, in _read_from_mem_cache
+    raise CacheStorageKeyNotFoundError("Key not found in mem cache")
+streamlit.runtime.caching.storage.cache_storage_protocol.CacheStorageKeyNotFoundError: Key not found in mem cache
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/home/appuser/venv/lib/python3.9/site-packages/streamlit/runtime/caching/cache_data_api.py", line 596, in read_result
+    pickled_entry = self.storage.get(key)
+  File "/home/appuser/venv/lib/python3.9/site-packages/streamlit/runtime/caching/storage/in_memory_cache_storage_wrapper.py", line 89, in get
+    entry_bytes = self._persist_storage.get(key)
+  File "/home/appuser/venv/lib/python3.9/site-packages/streamlit/runtime/caching/storage/local_disk_cache_storage.py", line 155, in get
+    raise CacheStorageKeyNotFoundError(
+streamlit.runtime.caching.storage.cache_storage_protocol.CacheStorageKeyNotFoundError: Local disk cache storage is disabled (persist=None)
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/home/appuser/venv/lib/python3.9/site-packages/streamlit/runtime/caching/cache_utils.py", line 308, in _handle_cache_miss
+    cached_result = cache.read_result(value_key)
+  File "/home/appuser/venv/lib/python3.9/site-packages/streamlit/runtime/caching/cache_data_api.py", line 598, in read_result
+    raise CacheKeyNotFoundError(str(e)) from e
+streamlit.runtime.caching.cache_errors.CacheKeyNotFoundError: Local disk cache storage is disabled (persist=None)
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/home/appuser/venv/lib/python3.9/site-packages/openpolicedata/data_loaders.py", line 427, in __init__
+    self.excel_file = pd.ExcelFile(url)
+  File "/home/appuser/venv/lib/python3.9/site-packages/pandas/io/excel/_base.py", line 1513, in __init__
+    self._reader = self._engines[engine](self._io, storage_options=storage_options)
+  File "/home/appuser/venv/lib/python3.9/site-packages/pandas/io/excel/_xlrd.py", line 35, in __init__
+    super().__init__(filepath_or_buffer, storage_options=storage_options)
+  File "/home/appuser/venv/lib/python3.9/site-packages/pandas/io/excel/_base.py", line 540, in __init__
+    self.book = self.load_workbook(self.handles.handle)
+  File "/home/appuser/venv/lib/python3.9/site-packages/pandas/io/excel/_xlrd.py", line 48, in load_workbook
+    return open_workbook(file_contents=data)
+  File "/home/appuser/venv/lib/python3.9/site-packages/xlrd/__init__.py", line 172, in open_workbook
+    bk = open_workbook_xls(
+  File "/home/appuser/venv/lib/python3.9/site-packages/xlrd/book.py", line 104, in open_workbook_xls
+    bk.parse_globals()
+  File "/home/appuser/venv/lib/python3.9/site-packages/xlrd/book.py", line 1231, in parse_globals
+    self.handle_filepass(data)
+  File "/home/appuser/venv/lib/python3.9/site-packages/xlrd/book.py", line 943, in handle_filepass
+    raise XLRDError("Workbook is encrypted")
+xlrd.biffh.XLRDError: Workbook is encrypted
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/home/appuser/venv/lib/python3.9/site-packages/openpolicedata/data_loaders.py", line 443, in __init__
+    import msoffcrypto
+ModuleNotFoundError: No module named 'msoffcrypto'
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/home/appuser/venv/lib/python3.9/site-packages/streamlit/runtime/scriptrunner/script_runner.py", line 552, in _run_script
+    exec(code, module.__dict__)
+  File "/app/opd_explorer/opd_download_page.py", line 147, in <module>
+    years = get_years(selectbox_sources, selectbox_states, selected_table)
+  File "/home/appuser/venv/lib/python3.9/site-packages/streamlit/runtime/caching/cache_utils.py", line 209, in wrapper
+    return cached_func(*args, **kwargs)
+  File "/home/appuser/venv/lib/python3.9/site-packages/streamlit/runtime/caching/cache_utils.py", line 238, in __call__
+    return self._get_or_create_cached_value(args, kwargs)
+  File "/home/appuser/venv/lib/python3.9/site-packages/streamlit/runtime/caching/cache_utils.py", line 263, in _get_or_create_cached_value
+    return self._handle_cache_miss(cache, value_key, func_args, func_kwargs)
+  File "/home/appuser/venv/lib/python3.9/site-packages/streamlit/runtime/caching/cache_utils.py", line 317, in _handle_cache_miss
+    computed_value = self._info.func(*func_args, **func_kwargs)
+  File "/app/opd_explorer/opd_download_page.py", line 66, in get_years
+    years = src.get_years(table_type=selectbox_table_types, force=True)
+  File "/home/appuser/venv/lib/python3.9/site-packages/openpolicedata/data.py", line 283, in get_years
+    loader = self.__get_loader(data_type, url, dataset_id=df["dataset_id"], date_field=date_field)
+  File "/home/appuser/venv/lib/python3.9/site-packages/openpolicedata/data.py", line 670, in __get_loader
+    loader = data_loaders.Excel(url, date_field=date_field, agency_field=agency_field)
+  File "/home/appuser/venv/lib/python3.9/site-packages/openpolicedata/data_loaders.py", line 445, in __init__
+    raise ImportError(f"{url} is encrypted. OpenPoliceData may be able to open it if msoffcrypto-tool " +
+ImportError: http://www.rutlandcitypolice.com/app/download/5136813/ResponseToResistance+2015-2017.xls is encrypted. OpenPoliceData may be able to open it if msoffcrypto-tool (https://pypi.org/project/msoffcrypto-tool/) is installed (pip install msoffcrypto-tool)
+selectbox_states = Vermont
+Updated years to [2015, 2014, 2013, 2012, 2011, 2010, 2009, 2008, 2007, 2006, 2005, 2004, 2003, 2002, 2001, 2000, 1999, 1998, 1997, 1996, 1995, 1994, 1993, 1992, 1991, 1990]
+Selected year is 2015 with type <class 'int'>
+Old selection = ['Vermont', 'Rutland', 'TRAFFIC STOPS', '2015', None]
+New selection = ['Vermont', 'State Police', 'OFFICER-INVOLVED SHOOTINGS', '2015', None]
+Resetting download button
+Agency name is State Police and agency filter is None
+Done with rendering dataframe using OPD Version 0.5.5
+selectbox_states = Arizona
+Selected year is 2023 with type <class 'int'>
+Old selection = None
+New selection = ['Arizona', 'Gilbert', 'CALLS FOR SERVICE', '2023', None]
+Resetting download button
+Agency name is Gilbert and agency filter is None
+Done with rendering dataframe using OPD Version 0.5.5

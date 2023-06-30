@@ -1,4 +1,4 @@
-openpolicedata
+openpolicedata[optional]
 packaging
 pandas
 streamlit

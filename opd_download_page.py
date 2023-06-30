@@ -1,12 +1,14 @@
 import streamlit as st
+from datetime import datetime
 import math
-import os
 from packaging import version
 import pandas as pd
 import re
-import logging
 
+from streamlit_logger import create_logger
 import openpolicedata as opd
+
+__version__ = 1.0
 
 st.set_page_config(
     page_title="OpenPoliceData",
@@ -20,32 +22,16 @@ st.set_page_config(
 NA_DISPLAY_VALUE = "NOT APPLICABLE"
 ALL = "ALL"
 
-# https://discuss.streamlit.io/t/streamlit-duplicates-log-messages-when-stream-handler-is-added/16426/4
-def create_logger(name, level='INFO', file=None, addtime=False):
-    logger = logging.getLogger(name)
-    logger.propagate = False
-    logger.setLevel(level)
-    if addtime:
-        format = "%(asctime)s :: %(message)s"
-    else:
-        format = '%(message)s'
-    #if no streamhandler present, add one
-    if sum([isinstance(handler, logging.StreamHandler) for handler in logger.handlers]) == 0:
-        ch = logging.StreamHandler()
-        ch.setFormatter(logging.Formatter(format, '%y-%m-%d %H:%M:%S'))
-        logger.addHandler(ch)
-    #if a file handler is requested, check for existence then add
-    if file is not None:
-        if sum([isinstance(handler, logging.FileHandler) for handler in logger.handlers]) == 0:
-            ch = logging.FileHandler(file, 'w')
-            ch.setFormatter(logging.Formatter(format, '%y-%m-%d %H:%M:%S'))
-            logger.addHandler(ch)
-        
-    return logger
-
 if 'logger' not in st.session_state:
     st.session_state['logger'] = create_logger(name = 'opd-app', level = 'DEBUG')
 logger = st.session_state['logger']
+
+now = datetime.now()
+
+logger.info(now)
+logger.info("VERSIONS:")
+logger.info(f"\tOpenPoliceData: {opd.__version__}")
+logger.info(f"\tOPD Explorer: {__version__}")
 
 if 'last_selection' not in st.session_state:
     st.session_state['last_selection'] = None
@@ -209,7 +195,7 @@ with st.empty():
             with st.spinner("Retrieving record count..."):
                 record_count = src.get_count(year=selected_year, table_type=selected_table, agency=agency_filter)
         else:
-            wait_text = "Retrieving Data... (Large datasets may )"
+            wait_text = "Retrieving Data... (Large datasets may take time to retrieve)"
 
         logger.debug(f"record_count is {record_count}")
         no_data_str = f"No data found for the {selected_table} table for {selectbox_sources} in {selected_year}"
