@@ -1,12 +1,18 @@
 import streamlit as st
+import argparse
 from datetime import datetime
 import math
 from packaging import version
 import pandas as pd
 import re
 
-from streamlit_logger import create_logger
+from streamlit_logger import create_logger, Code
 import openpolicedata as opd
+
+parser = argparse.ArgumentParser()
+parser.add_argument('-d', '--debug', action='store_true')
+args = parser.parse_args()
+level = logging.DEBUG if args.debug else logging.INFO
 
 __version__ = "1.1"
 
@@ -23,7 +29,7 @@ NA_DISPLAY_VALUE = "NOT APPLICABLE"
 ALL = "ALL"
 
 if 'logger' not in st.session_state:
-    st.session_state['logger'] = create_logger(name = 'opd-app', level = logging.INFO)
+    st.session_state['logger'] = create_logger(name = 'opd-app', level = level)
 logger = st.session_state['logger']
 
 now = datetime.now()
@@ -81,17 +87,13 @@ with st.sidebar:
     selectbox_states = st.selectbox('States', data_catalog['State'].unique(), 
                                     help='Select a state to filter by')
     logger.info(f"Selected State: {selectbox_states}")
-    if len(selectbox_states) == 0:
-        selected_rows = data_catalog.copy()
-    else:
-        selected_rows = data_catalog[data_catalog['State'].isin([selectbox_states])]
+    selected_rows = data_catalog[data_catalog['State'].isin([selectbox_states])]
 
     selectbox_sources = st.selectbox('Available Sources', selected_rows['SourceName'].unique(), 
                                      help='Select a source')
     logger.info(f"Selected Source: {selectbox_sources}")
 
-    if len(selectbox_sources) > 0:    
-        selected_rows = selected_rows[selected_rows['SourceName'].isin(
+    selected_rows = selected_rows[selected_rows['SourceName'].isin(
             [selectbox_sources])]
 
     # Table types that may be split into multiple sub-tables
@@ -117,25 +119,26 @@ with st.sidebar:
     logger.info(f"Selected table type: {selectbox_table_types}")
 
     related_tables = None
-    if len(selectbox_table_types) > 0:
-        # Selected table type has sub-tables
-        m = [x==selectbox_table_types for x in table_type_general]
-        table_types = [x for k,x in enumerate(table_types) if m[k]]
-        selected_rows = selected_rows[selected_rows['TableType'].isin(table_types)]
-        table_type_general = [x for k,x in enumerate(table_type_general) if m[k]]
-        table_types_sub = [x for k,x in enumerate(table_types_sub) if m[k]]
+    # Selected table type has sub-tables
+    m = [x==selectbox_table_types for x in table_type_general]
+    table_types = [x for k,x in enumerate(table_types) if m[k]]
+    selected_rows = selected_rows[selected_rows['TableType'].isin(table_types)]
+    table_type_general = [x for k,x in enumerate(table_type_general) if m[k]]
+    table_types_sub = [x for k,x in enumerate(table_types_sub) if m[k]]
 
-        if all([x is not None for x in table_types_sub]):
-            selectbox_subtype = st.selectbox('Table Subcategory', table_types_sub, 
-                                   help=f'The {table_type_general[0]} dataset is split into the following tables that all may be of interest: '+
-                                   f'{table_types_sub}. They likely use unique IDs to enable finding related data across tables.')
-            logger.info(f"Selected table subtype: {selectbox_subtype}")
+    if all([x is not None for x in table_types_sub]):
+        logger.code_reached(Code.SUBTABLE_MENU)
+        selectbox_subtype = st.selectbox('Table Subcategory', table_types_sub, 
+                                help=f'The {table_type_general[0]} dataset is split into the following tables that all may be of interest: '+
+                                f'{table_types_sub}. They likely use unique IDs to enable finding related data across tables.')
+        logger.info(f"Selected table subtype: {selectbox_subtype}")
 
-            selected_table = [x for x,y in zip(table_types, table_types_sub) if y==selectbox_subtype][0]
-            related_tables = [x for x,y in zip(table_types, table_types_sub) if y!=selectbox_subtype]
-            selected_rows = selected_rows[selected_rows['TableType']==selected_table]
-        else:
-            selected_table = table_types[0]
+        selected_table = [x for x,y in zip(table_types, table_types_sub) if y==selectbox_subtype][0]
+        related_tables = [x for x,y in zip(table_types, table_types_sub) if y!=selectbox_subtype]
+        selected_rows = selected_rows[selected_rows['TableType']==selected_table]
+    else:
+        logger.code_reached(Code.NO_SUBTABLE_MENU)
+        selected_table = table_types[0]
 
     try:
         years = get_years(selectbox_sources, selectbox_states, selected_table)
@@ -149,32 +152,38 @@ with st.sidebar:
         logger.info(f"Selected year: {selectbox_years}")
         
         selectbox_agencies = None
-        if len(selectbox_years) > 0:
-            selected_year = selectbox_years if selectbox_years!=NA_DISPLAY_VALUE else opd.defs.NA
-            selected_year = int(selected_year) if selected_year.isdigit() else selected_year
-            matches = selected_rows['Year'] == selected_year
-            if matches.any():
-                selected_rows = selected_rows[matches]
+        selected_year = selectbox_years if selectbox_years!=NA_DISPLAY_VALUE else opd.defs.NA
+        selected_year = int(selected_year) if selected_year.isdigit() else selected_year
+        matches = selected_rows['Year'] == selected_year
+        if matches.any():
+            if selected_year==opd.defs.NA:
+                logger.code_reached(Code.NA_YEAR_DATA)
             else:
-                selected_rows = selected_rows[selected_rows['Year']==opd.defs.MULTI]
-                if len(selected_rows)>1:
-                    logger.debug("Number of multi-rows is >1")
-                    start_years = selected_rows["coverage_start"].apply(lambda x: int(x.year) if pd.notnull(x) else x)
-                    end_years = selected_rows["coverage_end"].apply(lambda x: int(x.year) if pd.notnull(x) else x)
-                    all_years = [range(x,y+1) if pd.notnull(x) and pd.notnull(y) else pd.NA for x,y in zip(start_years, end_years)]
-                    tf = [selected_year in y if pd.notnull(y) else False for y in all_years]
-                    selected_rows = selected_rows[tf]
+                logger.code_reached(Code.SINGLE_YEAR_DATA)
+            selected_rows = selected_rows[matches]
+        else:
+            logger.code_reached(Code.MULTIYEAR_DATA)
+            selected_rows = selected_rows[selected_rows['Year']==opd.defs.MULTI]
+            if len(selected_rows)>1:
+                logger.code_reached(Code.MULTIPLE_MULTIYEAR_DATA)
+                logger.debug("Number of multi-rows is >1")
+                start_years = selected_rows["coverage_start"].apply(lambda x: int(x.year) if pd.notnull(x) else x)
+                end_years = selected_rows["coverage_end"].apply(lambda x: int(x.year) if pd.notnull(x) else x)
+                all_years = [range(x,y+1) if pd.notnull(x) and pd.notnull(y) else pd.NA for x,y in zip(start_years, end_years)]
+                tf = [selected_year in y if pd.notnull(y) else False for y in all_years]
+                selected_rows = selected_rows[tf]
 
-            if selected_rows.iloc[0]["Agency"]==opd.defs.MULTI and selected_rows.iloc[0]["DataType"] not in ["CSV","Excel"]:
-                try:
-                    agencies = get_agencies(selectbox_sources, selectbox_states, selected_table, selected_rows.iloc[0]["Year"])
-                except:
-                    logger.exception()
-                    load_failure = True
-                if not load_failure:
-                    selectbox_agencies = st.selectbox('Available Agencies', agencies, 
-                                        help='Select an agency')
-                    logger.info(f"Selected agency: {selectbox_agencies}")
+        if selected_rows.iloc[0]["Agency"]==opd.defs.MULTI and selected_rows.iloc[0]["DataType"] not in ["CSV","Excel"]:
+            try:
+                agencies = get_agencies(selectbox_sources, selectbox_states, selected_table, selected_rows.iloc[0]["Year"])
+                logger.code_reached(Code.GET_AGENCIES)
+            except:
+                logger.exception()
+                load_failure = True
+            if not load_failure:
+                selectbox_agencies = st.selectbox('Available Agencies', agencies, 
+                                    help='Select an agency')
+                logger.info(f"Selected agency: {selectbox_agencies}")
 
 failure_msg = "The requested dataset information cannot be loaded. The error likely NOT due to an error with this site. "+
                 "Errors usually result from the police department or agency sites that the data is sourced from. " +
@@ -216,6 +225,7 @@ else:
     new_selection = [selectbox_states, selectbox_sources, selected_table, selectbox_years, selectbox_agencies]
     if st.session_state['last_selection'] != new_selection:
         # New selection. Delete previously downloaded data
+        logger.code_reached(Code.CHANGE_SELECTION)
         logger.info("Resetting download button")
         st.session_state['csv_text_output'] = None
         st.session_state['preview'] = None
@@ -226,6 +236,7 @@ else:
     agency_filter = None
     agency_name = selected_rows.iloc[0]["Agency"]
     if selectbox_agencies is not None and selectbox_agencies!=ALL:
+        logger.code_reached(Code.SINGLE_AGENCY_SELECT)
         agency_filter = selectbox_agencies
         agency_name = selectbox_agencies
 
@@ -244,6 +255,7 @@ else:
                     try:
                         record_count = src.get_count(year=selected_year, table_type=selected_table, agency=agency_filter)
                         logger.info(f"record_count: {record_count}")
+                        logger.code_reached(Code.FETCH_DATA_GET_COUNT)
                     except:
                         logger.exception()
                         load_failure = True
@@ -256,6 +268,7 @@ else:
                 with st.spinner(wait_text):
                     try:
                         data_from_url = src.load_from_url(year=selected_year, table_type=selected_table, agency=agency_filter).table
+                        logger.code_reached(Code.FETCH_DATA_LOAD_WO_COUNT)
                     except:
                         logger.exception()
                         load_failure = True
@@ -273,6 +286,7 @@ else:
                         iter+=1
                         df_list.append(tbl.table)
                         pbar.progress(iter / nbatches, text=wait_text)
+                    logger.code_reached(Code.FETCH_DATA_LOAD_WITH_COUNT)
                 except:
                     logger.exception()
                     load_failure = True
@@ -292,6 +306,7 @@ else:
                 p = data_from_url.head(20)
                 try:
                     p = p.replace({r'[^\x00-\x7F]+':''}, regex=True)
+                    logger.code_reached(Code.PREVIEW_REGEXREP_SUCCESS)
                 except:
                     pass
                 st.session_state['preview'] = p
@@ -311,6 +326,7 @@ else:
                                                 agency_name , selected_rows.iloc[0]["TableType"], selected_year)
         if st.download_button('Download CSV', data=st.session_state['csv_text_output'] , file_name=csv_filename, mime='text/csv'):
             logger.info('Download complete!!!!!')
+            logger.code_reached(Code.DOWNLOAD)
 
         st.divider()
         st.subheader("Preview")
@@ -327,4 +343,5 @@ else:
             "Column names and codes may be difficult to understand. Check the data dictionary and "+
             "source URLs for more information. If you still are having issues, feel free to reach out to us at the link above.")
 
+logger.log_coverage()
 logger.info(f'Done with rendering dataframe using OPD Version {opd.__version__}')
