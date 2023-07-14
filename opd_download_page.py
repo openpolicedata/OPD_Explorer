@@ -1,12 +1,13 @@
 import streamlit as st
 import argparse
 from datetime import datetime
+import logging
 import math
 from packaging import version
 import pandas as pd
 import re
 
-from streamlit_logger import create_logger, Code
+from streamlit_logger import create_logger, get_remote_ip, Code
 import openpolicedata as opd
 
 parser = argparse.ArgumentParser()
@@ -32,12 +33,16 @@ if 'logger' not in st.session_state:
     st.session_state['logger'] = create_logger(name = 'opd-app', level = level)
 logger = st.session_state['logger']
 
+if args.debug:
+    logger.info("***********DEBUG MODE*************")
+
 now = datetime.now()
 
 logger.info(now)
 logger.info("VERSIONS:")
 logger.info(f"\tOpenPoliceData: {opd.__version__}")
 logger.info(f"\tOPD Explorer: {__version__}")
+logger.info(f"IP: {get_remote_ip()}")
 
 if 'last_selection' not in st.session_state:
     st.session_state['last_selection'] = None
@@ -143,7 +148,7 @@ with st.sidebar:
     try:
         years = get_years(selectbox_sources, selectbox_states, selected_table)
     except:
-        logger.exception()
+        logger.exception('')
         load_failure = True
 
     if not load_failure:
@@ -178,18 +183,18 @@ with st.sidebar:
                 agencies = get_agencies(selectbox_sources, selectbox_states, selected_table, selected_rows.iloc[0]["Year"])
                 logger.code_reached(Code.GET_AGENCIES)
             except:
-                logger.exception()
+                logger.exception('')
                 load_failure = True
             if not load_failure:
                 selectbox_agencies = st.selectbox('Available Agencies', agencies, 
                                     help='Select an agency')
                 logger.info(f"Selected agency: {selectbox_agencies}")
 
-failure_msg = "The requested dataset information cannot be loaded. The error likely NOT due to an error with this site. "+
-                "Errors usually result from the police department or agency sites that the data is sourced from. " +
-                "If this error is with the agency's site, you can still access other datasets from OPD Explorer.\n\n" + 
-                "If you need to access to the currently selected dataset, please contact us on our " +
-                "[discussion board](https://github.com/openpolicedata/openpolicedata/discussions) or by [email](openpolicedata@gmail.com) or try again later."
+failure_msg = "The requested dataset information cannot be loaded due to an error. The error is likely caused by "+\
+                "an error with the police department or agency site that the data is sourced from. " +\
+                "If this error is with the agency's site, you can still access other datasets from OPD Explorer.\n\n" + \
+                "If you need to access to the currently selected dataset, please try again later or contact us on our " +\
+                "[discussion board](https://github.com/openpolicedata/openpolicedata/discussions) or by [email](mailto:openpolicedata@gmail.com)."
 if load_failure:
     st.error(failure_msg)
 else:
@@ -257,7 +262,7 @@ else:
                         logger.info(f"record_count: {record_count}")
                         logger.code_reached(Code.FETCH_DATA_GET_COUNT)
                     except:
-                        logger.exception()
+                        logger.exception('')
                         load_failure = True
             else:
                 wait_text = "Retrieving Data... (Large datasets may take time to retrieve)"
@@ -270,7 +275,7 @@ else:
                         data_from_url = src.load_from_url(year=selected_year, table_type=selected_table, agency=agency_filter).table
                         logger.code_reached(Code.FETCH_DATA_LOAD_WO_COUNT)
                     except:
-                        logger.exception()
+                        logger.exception('')
                         load_failure = True
 
                 if not load_failure and len(data_from_url)==0:
@@ -288,7 +293,7 @@ else:
                         pbar.progress(iter / nbatches, text=wait_text)
                     logger.code_reached(Code.FETCH_DATA_LOAD_WITH_COUNT)
                 except:
-                    logger.exception()
+                    logger.exception('')
                     load_failure = True
                     
                 if not load_failure:
