@@ -268,7 +268,8 @@ else:
                 wait_text = "Retrieving Data... (Large datasets may take time to retrieve)"
 
             no_data_str = f"No data found for the {selected_table} table for {selectbox_sources} in {selected_year}"
-            no_data_str = f"{no_data_str} when filtering for agency {agency_filter}"
+            if agency_filter is not None:
+                no_data_str = f"{no_data_str} when filtering for agency {agency_filter}"
             if not load_failure and record_count is None:
                 with st.spinner(wait_text):
                     try:
