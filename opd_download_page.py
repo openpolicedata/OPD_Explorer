@@ -15,7 +15,7 @@ parser.add_argument('-d', '--debug', action='store_true')
 args = parser.parse_args()
 level = logging.DEBUG if args.debug else logging.INFO
 
-__version__ = "1.1"
+__version__ = "1.1.1"
 
 st.set_page_config(
     page_title="OpenPoliceData",
