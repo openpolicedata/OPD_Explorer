@@ -47,7 +47,6 @@ logger.info(f"IP: {get_remote_ip()}")
 if 'last_selection' not in st.session_state:
     st.session_state['last_selection'] = None
     
-@st.cache_data
 def get_data_catalog():
     df = opd.datasets.query()
     # Remove min_version = -1 (not available in any version) or min_version > current version
