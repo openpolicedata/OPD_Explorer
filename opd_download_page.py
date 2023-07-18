@@ -48,6 +48,7 @@ if 'last_selection' not in st.session_state:
     st.session_state['last_selection'] = None
     
 def get_data_catalog():
+    logger.info("Updating datasets")
     df = opd.datasets.query()
     # Remove min_version = -1 (not available in any version) or min_version > current version
     df = df[df["min_version"].apply(lambda x: 
