@@ -37,6 +37,7 @@ class Code(Enum):
     FETCH_DATA_LOAD_WITH_COUNT = 12
     PREVIEW_REGEXREP_SUCCESS = 13
     DOWNLOAD = 14
+    MULTIYEAR_FILE = 15
 
 # https://discuss.streamlit.io/t/streamlit-duplicates-log-messages-when-stream-handler-is-added/16426/4
 def create_logger(name, level=logging.INFO, file=None, addtime=False):

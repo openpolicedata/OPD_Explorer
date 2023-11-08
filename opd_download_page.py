@@ -15,7 +15,7 @@ parser.add_argument('-d', '--debug', action='store_true')
 args = parser.parse_args()
 level = logging.DEBUG if args.debug else logging.INFO
 
-__version__ = "1.1.1"
+__version__ = "1.2"
 
 st.set_page_config(
     page_title="OpenPoliceData",
@@ -33,8 +33,7 @@ if 'logger' not in st.session_state:
     st.session_state['logger'] = create_logger(name = 'opd-app', level = level)
 logger = st.session_state['logger']
 
-if args.debug:
-    logger.info("***********DEBUG MODE*************")
+logger.debug("***********DEBUG MODE*************")
 
 now = datetime.now()
 
@@ -60,7 +59,7 @@ def get_data_catalog():
 @st.cache_data(show_spinner="Loading year information...")
 def get_years(selectbox_sources, selectbox_states, selectbox_table_types):
     src = opd.Source(selectbox_sources, state=selectbox_states)
-    years = src.get_years(table_type=selectbox_table_types, force=True)
+    years = src.get_years(table_type=selectbox_table_types, force=False)
     years.sort(reverse=True)
     return [str(x) if x!=opd.defs.NA else NA_DISPLAY_VALUE for x in years]
 
@@ -152,6 +151,14 @@ with st.sidebar:
         load_failure = True
 
     if not load_failure:
+        load_file =  len(selected_rows) == 1 and selected_rows.iloc[0]["DataType"] in ["CSV","Excel"] and \
+            selected_rows.iloc[0]['Year']==opd.defs.MULTI
+        if load_file:
+            logger.debug("Single file load mode")
+            # Data is a single file. Since the whole file has to be loaded, just let the user download
+            # all years at once
+            years = [f"{min(years)}-{max(years)}"]
+
         selectbox_years = st.selectbox('Available Years', years, 
                                     help='Select a year')
         logger.info(f"Selected year: {selectbox_years}")
@@ -167,7 +174,12 @@ with st.sidebar:
                 logger.code_reached(Code.SINGLE_YEAR_DATA)
             selected_rows = selected_rows[matches]
         else:
-            logger.code_reached(Code.MULTIYEAR_DATA)
+            if load_file:
+                logger.code_reached(Code.MULTIYEAR_FILE)
+                orig_year = selected_year
+                selected_year = opd.defs.MULTI
+            else:
+                logger.code_reached(Code.MULTIYEAR_DATA)
             selected_rows = selected_rows[selected_rows['Year']==opd.defs.MULTI]
             if len(selected_rows)>1:
                 logger.code_reached(Code.MULTIPLE_MULTIYEAR_DATA)
@@ -329,7 +341,7 @@ else:
 
     if st.session_state["preview"] is not None:
         csv_filename = opd.data.get_csv_filename(selected_rows.iloc[0]["State"], selected_rows.iloc[0]["SourceName"], 
-                                                agency_name , selected_rows.iloc[0]["TableType"], selected_year)
+                                                agency_name , selected_rows.iloc[0]["TableType"], orig_year if load_file else selected_year)
         if st.download_button('Download CSV', data=st.session_state['csv_text_output'] , file_name=csv_filename, mime='text/csv'):
             logger.info('Download complete!!!!!')
             logger.code_reached(Code.DOWNLOAD)
