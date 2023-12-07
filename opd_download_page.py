@@ -74,7 +74,7 @@ def get_agencies(selectbox_sources, selectbox_states, selectbox_table_types, yea
 
 data_catalog = get_data_catalog()
 st.title('OpenPoliceData Explorer')
-st.caption("Explorer uses the [OpenPoliceData](https://pypi.org/project/openpolicedata/) Python library to access 365 (and growing) "+
+st.caption("Explorer uses the [OpenPoliceData](https://pypi.org/project/openpolicedata/) Python library to access 383 (and growing) "+
            "incident-level datasets from police departments around the United States "+
            "including traffic stops, use of force, and officer-involved shootings data.")
 
