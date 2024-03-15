@@ -36,6 +36,7 @@ logger = st.session_state['logger']
 logger.debug("***********DEBUG MODE*************")
 
 now = datetime.now()
+today = datetime.now().replace(hour=0, minute=0, second=0, microsecond=0)
 
 logger.info(now)
 logger.info("VERSIONS:")
@@ -46,8 +47,11 @@ logger.info(f"IP: {get_remote_ip()}")
 if 'last_selection' not in st.session_state:
     st.session_state['last_selection'] = None
     
-def get_data_catalog():
-    logger.info("Updating datasets")
+def get_data_catalog(date):
+    if "lastload" in st.session_state and st.session_state["lastload"]!=date:
+        logger.info("Reloading datasets")
+        opd.datasets.reload()
+    st.session_state["lastload"] = date
     df = opd.datasets.query()
     # Remove min_version = -1 (not available in any version) or min_version > current version
     df = df[df["min_version"].apply(lambda x: 
@@ -72,7 +76,7 @@ def get_agencies(selectbox_sources, selectbox_states, selectbox_table_types, yea
     return agencies
 
 
-data_catalog = get_data_catalog()
+data_catalog = get_data_catalog(today)
 st.title('OpenPoliceData Explorer')
 st.caption("Explorer uses the [OpenPoliceData](https://pypi.org/project/openpolicedata/) Python library to access 383 (and growing) "+
            "incident-level datasets from police departments around the United States "+
@@ -248,7 +252,8 @@ else:
         st.session_state['preview'] = None
         st.session_state['last_selection'] = new_selection
 
-    collect_help = "This collects the data from the data source's URL. Upon completion, the data will be available for download. This may take some time."
+    collect_help = "This collects the data from the data source's URL. Upon completion, the data will be available for download "+\
+                   "using the *Download CSV button*. This may take some time."
 
     agency_filter = None
     agency_name = selected_rows.iloc[0]["Agency"]
