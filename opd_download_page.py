@@ -15,7 +15,7 @@ parser.add_argument('-d', '--debug', action='store_true')
 args = parser.parse_args()
 level = logging.DEBUG if args.debug else logging.INFO
 
-__version__ = "1.3"
+__version__ = "1.4"
 
 st.set_page_config(
     page_title="OpenPoliceData",
@@ -65,16 +65,17 @@ def get_data_catalog():
     return df
 
 @st.cache_data(show_spinner="Loading year information...")
-def get_years(selectbox_sources, selectbox_states, selectbox_table_types):
-    src = opd.Source(selectbox_sources, state=selectbox_states)
+def get_years(selectbox_sources, selectbox_states, selectbox_table_types, selected_agency):
+    src = opd.Source(selectbox_sources, state=selectbox_states, agency=selected_agency)
     years = src.get_years(table_type=selectbox_table_types, force=False)
     years.sort(reverse=True)
     return [str(x) if x!=opd.defs.NA else NA_DISPLAY_VALUE for x in years]
 
 @st.cache_data(show_spinner="Loading agency information...")
-def get_agencies(selectbox_sources, selectbox_states, selectbox_table_types, year):
-    src = opd.Source(selectbox_sources, state=selectbox_states)
-    agencies = src.get_agencies(table_type=selectbox_table_types, year=year)
+def get_agencies(selectbox_sources, selectbox_states, selectbox_table_types, year, selected_agency,
+                 url_contains, id_contains):
+    src = opd.Source(selectbox_sources, state=selectbox_states, agency=selected_agency)
+    agencies = src.get_agencies(table_type=selectbox_table_types, year=year, url_contains=url_contains, id_contains=id_contains)
     agencies.sort()
     agencies.insert(0, ALL)
     return agencies
@@ -97,12 +98,13 @@ load_failure = False
 with st.sidebar:
     st.header('Dataset Filters')
     selectbox_states = st.selectbox('States', data_catalog['State'].unique(), 
-                                    help='Select a state to filter by')
+                                    help="Select a state to filter by. MULTIPLE indicates datasets that contain more than 1 state's data")
     logger.info(f"Selected State: {selectbox_states}")
     selected_rows = data_catalog[data_catalog['State'].isin([selectbox_states])]
 
     selectbox_sources = st.selectbox('Available Sources', selected_rows['SourceName'].unique(), 
-                                     help='Select a source')
+                                     help="Select a source (typically a police department, sheriff's office, "
+                                     "or a state (if data is for all agencies in a state))")
     logger.info(f"Selected Source: {selectbox_sources}")
 
     selected_rows = selected_rows[selected_rows['SourceName'].isin(
@@ -115,7 +117,7 @@ with st.sidebar:
     table_types_sub = [None for _ in range(len(table_types))]
     for k,x in enumerate(table_types):
         for y in split_tables:
-            m = re.search(y+"\s?-\s?(.+)", x)
+            m = re.search(y+r"\s?-\s?(.+)", x)
             if m:
                 table_type_general[k] = y
                 table_types_sub[k] = m.group(1)
@@ -152,8 +154,22 @@ with st.sidebar:
         logger.code_reached(Code.NO_SUBTABLE_MENU)
         selected_table = table_types[0]
 
+    all_agencies_for_source = selected_rows['Agency'].unique()
+    if len(all_agencies_for_source)>1:
+        # The data source table contains multiple agency options for this source
+        # Usually, this occurs for counties where there is data for the county agency, 
+        # such as the county sheriff, and for all agencies in the county (i.e. agency = MULTIPLE)
+        selected_agency = st.selectbox('Available Agencies', all_agencies_for_source, 
+                                    help='Select an agency (MULTIPLE indicates multiple agencies within the limits of the source location)')
+        selected_rows = selected_rows[selected_rows['Agency'].isin(
+            [selected_agency])]
+        logger.code_reached(Code.MULTIPLE_AGENCIES_IN_TABLE)
+    else:
+        selected_agency = all_agencies_for_source[0]
+        logger.code_reached(Code.SINGLE_AGENCY_IN_TABLE)
+
     try:
-        years = get_years(selectbox_sources, selectbox_states, selected_table)
+        years = get_years(selectbox_sources, selectbox_states, selected_table, selected_agency)
     except:
         logger.exception('')
         load_failure = True
@@ -172,6 +188,7 @@ with st.sidebar:
         logger.info(f"Selected year: {selectbox_years}")
         
         selectbox_agencies = None
+        selectbox_coverage = None
         selected_year = selectbox_years if selectbox_years!=NA_DISPLAY_VALUE else opd.defs.NA
         selected_year = int(selected_year) if selected_year.isdigit() else selected_year
         matches = selected_rows['Year'] == selected_year
@@ -198,9 +215,24 @@ with st.sidebar:
                 tf = [selected_year in y if pd.notnull(y) else False for y in all_years]
                 selected_rows = selected_rows[tf]
 
+                if len(selected_rows)>1:
+                    # There are multiple multi-year datasets that include the selected year
+                    start_years = selected_rows["coverage_start"].dt.strftime('%Y-%m-%d').to_list()
+                    end_years =   selected_rows["coverage_end"].dt.strftime('%Y-%m-%d').to_list()
+
+                    coverage = [f"{x} - {y}" for x,y in zip(start_years, end_years)]
+                    selectbox_coverage = st.selectbox('Select dataset date range to request selected year from', coverage, 
+                                    help='Multiple datasets have been identified containing the selected year. Select a data range to specify a specific/single dataset.')
+                    
+                    selection = [x==selectbox_coverage for x in coverage]
+                    selected_rows = selected_rows[selection]
+                    logger.code_reached(Code.MULTIPLE_MULTIYEAR_DATA_OVERLAP)
+
+
         if selected_rows.iloc[0]["Agency"]==opd.defs.MULTI and selected_rows.iloc[0]["DataType"] not in ["CSV","Excel"]:
             try:
-                agencies = get_agencies(selectbox_sources, selectbox_states, selected_table, selected_rows.iloc[0]["Year"])
+                agencies = get_agencies(selectbox_sources, selectbox_states, selected_table, selected_rows.iloc[0]["Year"], selected_agency,
+                                        selected_rows.iloc[0]["URL"], selected_rows.iloc[0]["dataset_id"])
                 logger.code_reached(Code.GET_AGENCIES)
             except:
                 logger.exception('')
@@ -247,7 +279,7 @@ else:
         text+=f"**{idx}**: {ds[idx]}  \n"
     st.info(text)
 
-    new_selection = [selectbox_states, selectbox_sources, selected_table, selectbox_years, selectbox_agencies]
+    new_selection = [selectbox_states, selectbox_sources, selected_table, selectbox_years, selectbox_agencies, selected_agency, selectbox_coverage]
     if st.session_state['last_selection'] != new_selection:
         # New selection. Delete previously downloaded data
         logger.code_reached(Code.CHANGE_SELECTION)
@@ -265,13 +297,15 @@ else:
         logger.code_reached(Code.SINGLE_AGENCY_SELECT)
         agency_filter = selectbox_agencies
         agency_name = selectbox_agencies
+    else:
+        logger.code_reached(Code.SINGLE_AGENCY_DATA)
 
     if related_tables is not None:
         st.markdown(f'*Related tables*: {",".join(related_tables)}' )
 
     with st.empty():
         if not load_failure and st.session_state["preview"] is None and st.button('Retrieve data', help=collect_help):
-            src = opd.Source(source_name=selectbox_sources, state=selectbox_states)        
+            src = opd.Source(source_name=selectbox_sources, state=selectbox_states, agency=selected_agency)        
             logger.info("Downloading data from URL")
 
             record_count = None
@@ -279,7 +313,9 @@ else:
                 wait_text = "Retrieving Data..."
                 with st.spinner("Retrieving record count..."):
                     try:
-                        record_count = src.get_count(year=selected_year, table_type=selected_table, agency=agency_filter)
+                        record_count = src.get_count(year=selected_year, table_type=selected_table, agency=agency_filter,
+                                                     url_contains=selected_rows.iloc[0]["URL"], 
+                                                     id_contains=selected_rows.iloc[0]["dataset_id"])
                         logger.info(f"record_count: {record_count}")
                         logger.code_reached(Code.FETCH_DATA_GET_COUNT)
                     except:
@@ -294,7 +330,9 @@ else:
             if not load_failure and record_count is None:
                 with st.spinner(wait_text):
                     try:
-                        data_from_url = src.load_from_url(year=selected_year, table_type=selected_table, agency=agency_filter).table
+                        data_from_url = src.load(year=selected_year, table_type=selected_table, agency=agency_filter,
+                                                 url_contains=selected_rows.iloc[0]["URL"], 
+                                                 id_contains=selected_rows.iloc[0]["dataset_id"]).table
                         logger.code_reached(Code.FETCH_DATA_LOAD_WO_COUNT)
                     except:
                         logger.exception('')
@@ -309,7 +347,9 @@ else:
                 pbar = st.progress(0, text=wait_text)
                 iter = 0
                 try:
-                    for tbl in src.load_from_url_gen(year=selected_year, table_type=selected_table, nbatch=batch_size, agency=agency_filter):
+                    for tbl in src.load_iter(year=selected_year, table_type=selected_table, nbatch=batch_size, agency=agency_filter,
+                                             url_contains=selected_rows.iloc[0]["URL"], 
+                                             id_contains=selected_rows.iloc[0]["dataset_id"]):
                         iter+=1
                         df_list.append(tbl.table)
                         pbar.progress(iter / nbatches, text=wait_text)

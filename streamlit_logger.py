@@ -38,6 +38,10 @@ class Code(Enum):
     PREVIEW_REGEXREP_SUCCESS = 13
     DOWNLOAD = 14
     MULTIYEAR_FILE = 15
+    SINGLE_AGENCY_DATA = 16
+    SINGLE_AGENCY_IN_TABLE = 17
+    MULTIPLE_AGENCIES_IN_TABLE = 18
+    MULTIPLE_MULTIYEAR_DATA_OVERLAP = 19
 
 # https://discuss.streamlit.io/t/streamlit-duplicates-log-messages-when-stream-handler-is-added/16426/4
 def create_logger(name, level=logging.INFO, file=None, addtime=False):
