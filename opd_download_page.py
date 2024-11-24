@@ -15,7 +15,7 @@ parser.add_argument('-d', '--debug', action='store_true')
 args = parser.parse_args()
 level = logging.DEBUG if args.debug else logging.INFO
 
-__version__ = "1.2"
+__version__ = "1.3"
 
 st.set_page_config(
     page_title="OpenPoliceData",
@@ -36,7 +36,6 @@ logger = st.session_state['logger']
 logger.debug("***********DEBUG MODE*************")
 
 now = datetime.now()
-today = datetime.now().replace(hour=0, minute=0, second=0, microsecond=0)
 
 logger.info(now)
 logger.info("VERSIONS:")
@@ -46,12 +45,17 @@ logger.info(f"IP: {get_remote_ip()}")
 
 if 'last_selection' not in st.session_state:
     st.session_state['last_selection'] = None
+
+if 'is_starting_up' not in st.session_state:
+    st.session_state['is_starting_up'] = True  # Indicates that the app has just been instantiated
     
-def get_data_catalog(date):
-    if "lastload" in st.session_state and st.session_state["lastload"]!=date:
-        logger.info("Reloading datasets")
+@st.cache_data(show_spinner="Updating datasets...", ttl='30 min')
+def get_data_catalog():
+    print('Getting data catalog')
+    if not st.session_state['is_starting_up']:  # Otherwise, the datasets have just been loaded
         opd.datasets.reload()
-    st.session_state["lastload"] = date
+        print('Reloading data catalog')
+
     df = opd.datasets.query()
     # Remove min_version = -1 (not available in any version) or min_version > current version
     df = df[df["min_version"].apply(lambda x: 
@@ -76,9 +80,9 @@ def get_agencies(selectbox_sources, selectbox_states, selectbox_table_types, yea
     return agencies
 
 
-data_catalog = get_data_catalog(today)
+data_catalog = get_data_catalog()
 st.title('OpenPoliceData Explorer')
-st.caption("Explorer uses the [OpenPoliceData](https://pypi.org/project/openpolicedata/) Python library to access 383 (and growing) "+
+st.caption("Explorer uses the [OpenPoliceData](https://pypi.org/project/openpolicedata/) Python library to access over 500 "+
            "incident-level datasets from police departments around the United States "+
            "including traffic stops, use of force, and officer-involved shootings data.")
 
@@ -368,3 +372,5 @@ else:
 
 logger.log_coverage()
 logger.info(f'Done with rendering dataframe using OPD Version {opd.__version__}')
+
+st.session_state['is_starting_up'] = False
