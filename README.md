@@ -4,21 +4,18 @@
 # 
 # To setup
 ```
-git clone https://github.com/openpolicedata/OPD_Explorer.git
-cd OPD_Explorer/
-python3 -m venv .streamlit
-source .streamlit/bin/activate
-pip install -r requirements.txt
+> git clone https://github.com/openpolicedata/OPD_Explorer.git
+> cd OPD_Explorer/
+> pip install -r requirements.txt
 ```
 
 # To run
 ```
-cd OPD_Explorer/
-source .streamlit/bin/activate
-streamlit run opd_download_page.py --server.headless true
+> cd OPD_Explorer/
+> streamlit run opd_download_page.py
 ```
 
 # To upgrade streamlit
 ```
- pip install streamlit --upgrade
+> pip install streamlit --upgrade
 ```
