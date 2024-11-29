@@ -49,7 +49,7 @@ if 'last_selection' not in st.session_state:
 if 'is_starting_up' not in st.session_state:
     st.session_state['is_starting_up'] = True  # Indicates that the app has just been instantiated
     
-@st.cache_data(show_spinner="Updating datasets...", ttl='30 min')
+@st.cache_data(show_spinner="Updating datasets...", ttl='1 day')
 def get_data_catalog():
     print('Getting data catalog')
     if not st.session_state['is_starting_up']:  # Otherwise, the datasets have just been loaded
