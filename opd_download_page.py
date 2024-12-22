@@ -13,7 +13,7 @@ import openpolicedata as opd
 parser = argparse.ArgumentParser()
 parser.add_argument('-d', '--debug', action='store_true')
 args = parser.parse_args()
-level = logging.DEBUG if args.debug else logging.INFO
+level = logging.DEBUG # Temporarily setting logger to debug to identify issue w/ Missouri stops loading  # if args.debug else logging.INFO
 
 __version__ = "1.4"
 
@@ -334,8 +334,9 @@ else:
                                                  url_contains=selected_rows.iloc[0]["URL"], 
                                                  id_contains=selected_rows.iloc[0]["dataset_id"]).table
                         logger.code_reached(Code.FETCH_DATA_LOAD_WO_COUNT)
-                    except:
-                        logger.exception('')
+                    except Exception as e:
+                        logger.exception('Load failure occurred')
+                        logger.exception(str(e))
                         load_failure = True
 
                 if not load_failure and len(data_from_url)==0:
@@ -355,7 +356,7 @@ else:
                         pbar.progress(iter / nbatches, text=wait_text)
                     logger.code_reached(Code.FETCH_DATA_LOAD_WITH_COUNT)
                 except:
-                    logger.exception('')
+                    logger.exception('Load failure occurred')
                     load_failure = True
                     
                 if not load_failure:
@@ -371,11 +372,14 @@ else:
                 logger.info(f"Data downloaded from URL. Total of {len(data_from_url)} rows")
                 # Replace non-ASCII characters with '' because st.dataframe will throw an error otherwise
                 p = data_from_url.head(20)
+                pd.set_option('future.no_silent_downcasting', True)
                 try:
-                    p = p.replace({r'[^\x00-\x7F]+':''}, regex=True)
+                    pd.set_option('future.no_silent_downcasting', True)
+                    p = p.replace({r'[^\x00-\x7F]+':''}, regex=True).infer_objects()
                     logger.code_reached(Code.PREVIEW_REGEXREP_SUCCESS)
                 except:
                     pass
+                pd.reset_option('future.no_silent_downcasting')
                 st.session_state['preview'] = p
                 st.session_state["record_count"] = len(data_from_url)
                 csv_text = data_from_url.to_csv(index=False)
