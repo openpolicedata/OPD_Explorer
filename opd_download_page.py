@@ -15,7 +15,7 @@ parser.add_argument('-d', '--debug', action='store_true')
 args = parser.parse_args()
 level = logging.DEBUG # Temporarily setting logger to debug to identify issue w/ Missouri stops loading  # if args.debug else logging.INFO
 
-__version__ = "1.4"
+__version__ = "1.5.dev1"
 
 st.set_page_config(
     page_title="OpenPoliceData",
@@ -332,7 +332,8 @@ else:
                     try:
                         data_from_url = src.load(year=selected_year, table_type=selected_table, agency=agency_filter,
                                                  url_contains=selected_rows.iloc[0]["URL"], 
-                                                 id_contains=selected_rows.iloc[0]["dataset_id"]).table
+                                                 id_contains=selected_rows.iloc[0]["dataset_id"],
+                                                 verbose=True).table
                         logger.code_reached(Code.FETCH_DATA_LOAD_WO_COUNT)
                     except Exception as e:
                         logger.exception('Load failure occurred')
