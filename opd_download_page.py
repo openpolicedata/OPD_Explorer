@@ -15,7 +15,7 @@ parser.add_argument('-d', '--debug', action='store_true')
 args = parser.parse_args()
 level = logging.DEBUG # Temporarily setting logger to debug to identify issue w/ Missouri stops loading  # if args.debug else logging.INFO
 
-__version__ = "1.5.dev5"
+__version__ = "1.5.dev6"
 
 st.set_page_config(
     page_title="OpenPoliceData",
