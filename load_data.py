@@ -13,6 +13,7 @@ def load(src, selection, selected_rows, record_count, msgs):
     df_prev = []
     load_failure = False
     is_csv = False
+    nrows = -1
 
     if record_count is None:
         with st.spinner(msgs['wait']):

@@ -1,4 +1,4 @@
-openpolicedata >= 0.9.1.dev8
+openpolicedata >= 0.9.1.dev8[optional]
 packaging
 pandas
 streamlit
