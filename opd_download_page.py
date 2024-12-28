@@ -2,20 +2,23 @@ import streamlit as st
 import argparse
 from datetime import datetime
 import logging
-import math
 from packaging import version
 import pandas as pd
 import re
 
 from streamlit_logger import create_logger, get_remote_ip, Code
+import load_data
 import openpolicedata as opd
 
+# Must add -- before arguments so that streamlit does not try to read our args
+# i.e. -- --debug
+# https://discuss.streamlit.io/t/command-line-arguments/386/4
 parser = argparse.ArgumentParser()
 parser.add_argument('-d', '--debug', action='store_true')
 args = parser.parse_args()
-level = logging.DEBUG # Temporarily setting logger to debug to identify issue w/ Missouri stops loading  # if args.debug else logging.INFO
+level = logging.DEBUG # if args.debug else logging.INFO
 
-__version__ = "1.5.dev6"
+__version__ = "1.5.dev8"
 
 st.set_page_config(
     page_title="OpenPoliceData",
@@ -28,6 +31,10 @@ st.set_page_config(
 
 NA_DISPLAY_VALUE = "NOT APPLICABLE"
 ALL = "ALL"
+
+load_failure = False
+selection = {}
+msgs = {}
 
 if 'logger' not in st.session_state:
     st.session_state['logger'] = create_logger(name = 'opd-app', level = level)
@@ -92,8 +99,6 @@ st.markdown("Find Dataset ➡️ Retrieve Data ➡️ Download CSV")
 
 st.subheader('Selected Dataset Details')
 
-load_failure = False
-
 # Populate sidebar with dropdown menus and get selected dataset
 with st.sidebar:
     st.header('Dataset Filters')
@@ -147,12 +152,12 @@ with st.sidebar:
                                 f'{table_types_sub}. They likely use unique IDs to enable finding related data across tables.')
         logger.info(f"Selected table subtype: {selectbox_subtype}")
 
-        selected_table = [x for x,y in zip(table_types, table_types_sub) if y==selectbox_subtype][0]
+        selection['table'] = [x for x,y in zip(table_types, table_types_sub) if y==selectbox_subtype][0]
         related_tables = [x for x,y in zip(table_types, table_types_sub) if y!=selectbox_subtype]
-        selected_rows = selected_rows[selected_rows['TableType']==selected_table]
+        selected_rows = selected_rows[selected_rows['TableType']==selection['table']]
     else:
         logger.code_reached(Code.NO_SUBTABLE_MENU)
-        selected_table = table_types[0]
+        selection['table'] = table_types[0]
 
     all_agencies_for_source = selected_rows['Agency'].unique()
     if len(all_agencies_for_source)>1:
@@ -169,7 +174,7 @@ with st.sidebar:
         logger.code_reached(Code.SINGLE_AGENCY_IN_TABLE)
 
     try:
-        years = get_years(selectbox_sources, selectbox_states, selected_table, selected_agency)
+        years = get_years(selectbox_sources, selectbox_states, selection['table'], selected_agency)
     except:
         logger.exception('')
         load_failure = True
@@ -189,11 +194,11 @@ with st.sidebar:
         
         selectbox_agencies = None
         selectbox_coverage = None
-        selected_year = selectbox_years if selectbox_years!=NA_DISPLAY_VALUE else opd.defs.NA
-        selected_year = int(selected_year) if selected_year.isdigit() else selected_year
-        matches = selected_rows['Year'] == selected_year
+        selection['year'] = selectbox_years if selectbox_years!=NA_DISPLAY_VALUE else opd.defs.NA
+        selection['year'] = int(selection['year']) if selection['year'].isdigit() else selection['year']
+        matches = selected_rows['Year'] == selection['year']
         if matches.any():
-            if selected_year==opd.defs.NA:
+            if selection['year']==opd.defs.NA:
                 logger.code_reached(Code.NA_YEAR_DATA)
             else:
                 logger.code_reached(Code.SINGLE_YEAR_DATA)
@@ -201,8 +206,8 @@ with st.sidebar:
         else:
             if load_file:
                 logger.code_reached(Code.MULTIYEAR_FILE)
-                orig_year = selected_year
-                selected_year = opd.defs.MULTI
+                orig_year = selection['year']
+                selection['year'] = opd.defs.MULTI
             else:
                 logger.code_reached(Code.MULTIYEAR_DATA)
             selected_rows = selected_rows[selected_rows['Year']==opd.defs.MULTI]
@@ -212,7 +217,7 @@ with st.sidebar:
                 start_years = selected_rows["coverage_start"].apply(lambda x: int(x.year) if pd.notnull(x) else x)
                 end_years = selected_rows["coverage_end"].apply(lambda x: int(x.year) if pd.notnull(x) else x)
                 all_years = [range(x,y+1) if pd.notnull(x) and pd.notnull(y) else pd.NA for x,y in zip(start_years, end_years)]
-                tf = [selected_year in y if pd.notnull(y) else False for y in all_years]
+                tf = [selection['year'] in y if pd.notnull(y) else False for y in all_years]
                 selected_rows = selected_rows[tf]
 
                 if len(selected_rows)>1:
@@ -224,14 +229,13 @@ with st.sidebar:
                     selectbox_coverage = st.selectbox('Select dataset date range to request selected year from', coverage, 
                                     help='Multiple datasets have been identified containing the selected year. Select a data range to specify a specific/single dataset.')
                     
-                    selection = [x==selectbox_coverage for x in coverage]
-                    selected_rows = selected_rows[selection]
+                    selected_rows = selected_rows[[x==selectbox_coverage for x in coverage]]
                     logger.code_reached(Code.MULTIPLE_MULTIYEAR_DATA_OVERLAP)
 
 
         if selected_rows.iloc[0]["Agency"]==opd.defs.MULTI and selected_rows.iloc[0]["DataType"] not in ["CSV","Excel"]:
             try:
-                agencies = get_agencies(selectbox_sources, selectbox_states, selected_table, selected_rows.iloc[0]["Year"], selected_agency,
+                agencies = get_agencies(selectbox_sources, selectbox_states, selection['table'], selected_rows.iloc[0]["Year"], selected_agency,
                                         selected_rows.iloc[0]["URL"], selected_rows.iloc[0]["dataset_id"])
                 logger.code_reached(Code.GET_AGENCIES)
             except:
@@ -279,7 +283,7 @@ else:
         text+=f"**{idx}**: {ds[idx]}  \n"
     st.info(text)
 
-    new_selection = [selectbox_states, selectbox_sources, selected_table, selectbox_years, selectbox_agencies, selected_agency, selectbox_coverage]
+    new_selection = [selectbox_states, selectbox_sources, selection['table'], selectbox_years, selectbox_agencies, selected_agency, selectbox_coverage]
     if st.session_state['last_selection'] != new_selection:
         # New selection. Delete previously downloaded data
         logger.code_reached(Code.CHANGE_SELECTION)
@@ -291,11 +295,11 @@ else:
     collect_help = "This collects the data from the data source's URL. Upon completion, the data will be available for download "+\
                    "using the *Download CSV button*. This may take some time."
 
-    agency_filter = None
+    selection['agency'] = None
     agency_name = selected_rows.iloc[0]["Agency"]
     if selectbox_agencies is not None and selectbox_agencies!=ALL:
         logger.code_reached(Code.SINGLE_AGENCY_SELECT)
-        agency_filter = selectbox_agencies
+        selection['agency'] = selectbox_agencies
         agency_name = selectbox_agencies
     else:
         logger.code_reached(Code.SINGLE_AGENCY_DATA)
@@ -310,10 +314,10 @@ else:
 
             record_count = None
             if selected_rows.iloc[0]["DataType"] not in ["CSV","Excel"]:
-                wait_text = "Retrieving Data..."
+                msgs['wait'] = "Retrieving Data..."
                 with st.spinner("Retrieving record count..."):
                     try:
-                        record_count = src.get_count(year=selected_year, table_type=selected_table, agency=agency_filter,
+                        record_count = src.get_count(year=selection['year'], table_type=selection['table'], agency=selection['agency'],
                                                      url_contains=selected_rows.iloc[0]["URL"], 
                                                      id_contains=selected_rows.iloc[0]["dataset_id"])
                         logger.info(f"record_count: {record_count}")
@@ -322,71 +326,24 @@ else:
                         logger.exception('')
                         load_failure = True
             else:
-                wait_text = "Retrieving Data... (Large datasets may take time to retrieve)"
+                msgs['wait'] = "Retrieving Data... (Large datasets may take time to retrieve)"
 
-            no_data_str = f"No data found for the {selected_table} table for {selectbox_sources} in {selected_year}"
-            if agency_filter is not None:
-                no_data_str = f"{no_data_str} when filtering for agency {agency_filter}"
-            if not load_failure and record_count is None:
-                with st.spinner(wait_text):
-                    try:
-                        data_from_url = src.load(year=selected_year, table_type=selected_table, agency=agency_filter,
-                                                 url_contains=selected_rows.iloc[0]["URL"], 
-                                                 id_contains=selected_rows.iloc[0]["dataset_id"],
-                                                 verbose=True).table
-                        logger.code_reached(Code.FETCH_DATA_LOAD_WO_COUNT)
-                    except Exception as e:
-                        logger.exception('Load failure occurred')
-                        logger.exception(str(e))
-                        load_failure = True
+            msgs['no_data'] = f"No data found for the {selection['table']} table for {selectbox_sources} in {selection['year']}"
+            if selection['agency'] is not None:
+                msgs['no_data'] = f"{msgs['no_data']} when filtering for agency {selection['agency']}"
 
-                if not load_failure and len(data_from_url)==0:
-                    st.write(no_data_str)
-            elif not load_failure:
-                df_list = []
-                batch_size = 5000
-                nbatches = math.ceil(record_count / batch_size)
-                pbar = st.progress(0, text=wait_text)
-                iter = 0
-                try:
-                    for tbl in src.load_iter(year=selected_year, table_type=selected_table, nbatch=batch_size, agency=agency_filter,
-                                             url_contains=selected_rows.iloc[0]["URL"], 
-                                             id_contains=selected_rows.iloc[0]["dataset_id"]):
-                        iter+=1
-                        df_list.append(tbl.table)
-                        pbar.progress(iter / nbatches, text=wait_text)
-                    logger.code_reached(Code.FETCH_DATA_LOAD_WITH_COUNT)
-                except:
-                    logger.exception('Load failure occurred')
-                    load_failure = True
-                    
-                if not load_failure:
-                    if len(df_list)==0:
-                        st.write(no_data_str)
-                        data_from_url = []
-                    else:
-                        data_from_url = pd.concat(df_list)
+            if not load_failure:
+                data_as_csv_txt, nrows, df_prev, load_failure = load_data.load(src, selection, selected_rows, record_count, msgs)
 
             if load_failure:
                 st.error(failure_msg)
-            elif len(data_from_url)>0:
-                logger.info(f"Data downloaded from URL. Total of {len(data_from_url)} rows")
-                # Replace non-ASCII characters with '' because st.dataframe will throw an error otherwise
-                p = data_from_url.head(20)
-                pd.set_option('future.no_silent_downcasting', True)
-                try:
-                    pd.set_option('future.no_silent_downcasting', True)
-                    p = p.replace({r'[^\x00-\x7F]+':''}, regex=True).infer_objects()
-                    logger.code_reached(Code.PREVIEW_REGEXREP_SUCCESS)
-                except:
-                    pass
-                pd.reset_option('future.no_silent_downcasting')
-                st.session_state['preview'] = p
-                st.session_state["record_count"] = len(data_from_url)
-                csv_text = data_from_url.to_csv(index=False)
-                csv_text_output = csv_text.encode('utf-8', 'surrogateescape')
-                st.session_state['csv_text_output'] = csv_text_output
+            elif nrows>0:
+                logger.info(f"Data downloaded from URL. Total of {nrows} rows")
+                st.session_state['preview'] = df_prev
+                st.session_state["record_count"] = nrows
+                st.session_state['csv_text_output'] = data_as_csv_txt
             else:
+                st.write(msgs['no_data'])
                 logger.info("No data found")
 
         if st.session_state["preview"] is not None:
@@ -395,7 +352,7 @@ else:
 
     if st.session_state["preview"] is not None:
         csv_filename = opd.data.get_csv_filename(selected_rows.iloc[0]["State"], selected_rows.iloc[0]["SourceName"], 
-                                                agency_name , selected_rows.iloc[0]["TableType"], orig_year if load_file else selected_year)
+                                                agency_name , selected_rows.iloc[0]["TableType"], orig_year if load_file else selection['year'])
         if st.download_button('Download CSV', data=st.session_state['csv_text_output'] , file_name=csv_filename, mime='text/csv'):
             logger.info('Download complete!!!!!')
             logger.code_reached(Code.DOWNLOAD)

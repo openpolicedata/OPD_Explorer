@@ -23,25 +23,27 @@ def get_remote_ip() -> str:
 
 
 class Code(Enum):
-    SUBTABLE_MENU = 1
+    # FUTURE: Asheville Traffic stops
+    SUBTABLE_MENU = 1  # Charlotte OIS
     NO_SUBTABLE_MENU = 2
     SINGLE_YEAR_DATA = 3
     MULTIYEAR_DATA = 4
-    NA_YEAR_DATA = 5
-    MULTIPLE_MULTIYEAR_DATA = 6  # Don't think we have any of this right now
-    GET_AGENCIES = 7
+    NA_YEAR_DATA = 5  # Gilbert Employee
+    MULTIPLE_MULTIYEAR_DATA = 6  # Asheville Use of Force
+    GET_AGENCIES = 7  # Virginia STOPS
     CHANGE_SELECTION = 8
     SINGLE_AGENCY_SELECT = 9
     FETCH_DATA_GET_COUNT = 10
-    FETCH_DATA_LOAD_WO_COUNT = 11
+    FETCH_DATA_LOAD_WO_COUNT = 11  # Lousiville OIS
     FETCH_DATA_LOAD_WITH_COUNT = 12
     PREVIEW_REGEXREP_SUCCESS = 13
     DOWNLOAD = 14
     MULTIYEAR_FILE = 15
     SINGLE_AGENCY_DATA = 16
     SINGLE_AGENCY_IN_TABLE = 17
-    MULTIPLE_AGENCIES_IN_TABLE = 18
+    MULTIPLE_AGENCIES_IN_TABLE = 18  # California Contra Costa STOPS
     MULTIPLE_MULTIYEAR_DATA_OVERLAP = 19
+    FETCH_DATA_STANFORD = 20  # Stockton, CA Traffic stops
 
 # https://discuss.streamlit.io/t/streamlit-duplicates-log-messages-when-stream-handler-is-added/16426/4
 def create_logger(name, level=logging.INFO, file=None, addtime=False):
