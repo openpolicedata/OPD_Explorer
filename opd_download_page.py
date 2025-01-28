@@ -16,9 +16,9 @@ import openpolicedata as opd
 parser = argparse.ArgumentParser()
 parser.add_argument('-d', '--debug', action='store_true')
 args = parser.parse_args()
-level = logging.DEBUG # if args.debug else logging.INFO
+level = logging.DEBUG if args.debug else logging.INFO
 
-__version__ = "1.5.dev9"
+__version__ = "1.5"
 
 st.set_page_config(
     page_title="OpenPoliceData",
@@ -49,6 +49,8 @@ logger.info("VERSIONS:")
 logger.info(f"\tOpenPoliceData: {opd.__version__}")
 logger.info(f"\tOPD Explorer: {__version__}")
 logger.info(f"IP: {get_remote_ip()}")
+
+api_data_types = ["ArcGIS",'Carto','CKAN','Socrata']
 
 if 'last_selection' not in st.session_state:
     st.session_state['last_selection'] = None
@@ -180,7 +182,7 @@ with st.sidebar:
         load_failure = True
 
     if not load_failure:
-        load_file =  len(selected_rows) == 1 and selected_rows.iloc[0]["DataType"] in ["CSV","Excel"] and \
+        load_file =  len(selected_rows) == 1 and selected_rows.iloc[0]["DataType"] not in api_data_types and \
             selected_rows.iloc[0]['Year']==opd.defs.MULTI
         if load_file:
             logger.debug("Single file load mode")
@@ -218,6 +220,11 @@ with st.sidebar:
                 end_years = selected_rows["coverage_end"].apply(lambda x: int(x.year) if pd.notnull(x) else x)
                 all_years = [range(x,y+1) if pd.notnull(x) and pd.notnull(y) else pd.NA for x,y in zip(start_years, end_years)]
                 tf = [selection['year'] in y if pd.notnull(y) else False for y in all_years]
+
+                if not any(tf) and selection['year']==now.year and any([x+1==selection['year'] for x in end_years]):
+                    # Source table has not been updated for current year but dataset has data for current year
+                    tf = [x+1==selection['year'] for x in end_years]
+
                 selected_rows = selected_rows[tf]
 
                 if len(selected_rows)>1:
@@ -233,7 +240,7 @@ with st.sidebar:
                     logger.code_reached(Code.MULTIPLE_MULTIYEAR_DATA_OVERLAP)
 
 
-        if selected_rows.iloc[0]["Agency"]==opd.defs.MULTI and selected_rows.iloc[0]["DataType"] not in ["CSV","Excel"]:
+        if selected_rows.iloc[0]["Agency"]==opd.defs.MULTI and selected_rows.iloc[0]["DataType"] in api_data_types:
             try:
                 agencies = get_agencies(selectbox_sources, selectbox_states, selection['table'], selected_rows.iloc[0]["Year"], selected_agency,
                                         selected_rows.iloc[0]["URL"], selected_rows.iloc[0]["dataset_id"])
@@ -313,7 +320,7 @@ else:
             logger.info("Downloading data from URL")
 
             record_count = None
-            if selected_rows.iloc[0]["DataType"] not in ["CSV","Excel"]:
+            if selected_rows.iloc[0]["DataType"] in api_data_types:
                 msgs['wait'] = "Retrieving Data..."
                 with st.spinner("Retrieving record count..."):
                     try:
