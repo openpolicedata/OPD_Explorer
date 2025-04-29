@@ -48,7 +48,7 @@ logger.info(now)
 logger.info("VERSIONS:")
 logger.info(f"\tOpenPoliceData: {opd.__version__}")
 logger.info(f"\tOPD Explorer: {__version__}")
-logger.info(f"IP: {get_remote_ip()}")
+logger.info(f"\tStreamlit: {st.__version__}")  # 4/28/2025: Working ver =  1.44.1
 
 api_data_types = ["ArcGIS",'Carto','CKAN','Socrata']
 

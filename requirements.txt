@@ -1,4 +1,5 @@
-openpolicedata[optional] >= 0.9.1.dev8
+openpolicedata[optional] >= 0.10.0
 packaging
 pandas
-streamlit
+# 1.22.0 fails as of 4/28/2025
+streamlit >= 1.44.1
