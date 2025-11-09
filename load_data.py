@@ -15,6 +15,9 @@ def load(src, selection, selected_rows, record_count, msgs):
     is_csv = False
     nrows = -1
 
+    logger.info(f"Loading data for for {selection['year']=}, {selection['table']=}, {selection['agency']=}, "+\
+                                    f'{selected_rows.iloc[0]["URL"]=}, {selected_rows.iloc[0]["dataset_id"]=}')
+
     if record_count is None:
         with st.spinner(msgs['wait']):
             try:
@@ -26,15 +29,16 @@ def load(src, selection, selected_rows, record_count, msgs):
                     logger.code_reached(Code.FETCH_DATA_STANFORD)
                     nrows = data_loaders.count_csv_rows(data_from_url)
                 else:
+                    logger.info(f"Loading data for for {selection['year']=}, {selection['table']=}, {selection['agency']=}, "+\
+                                    f'{selected_rows.iloc[0]["URL"]=}, {selected_rows.iloc[0]["dataset_id"]=}')
                     data_from_url = src.load(year=selection['year'], table_type=selection['table'], agency=selection['agency'],
-                                                url_contains=selected_rows.iloc[0]["URL"], 
-                                                id_contains=selected_rows.iloc[0]["dataset_id"],
+                                                url=selected_rows.iloc[0]["URL"], 
+                                                id=selected_rows.iloc[0]["dataset_id"],
                                                 verbose=False).table
                     logger.code_reached(Code.FETCH_DATA_LOAD_WO_COUNT)
                     nrows = len(data_from_url)
             except Exception as e:
-                logger.exception('Load failure occurred')
-                logger.exception(str(e))
+                logger.exception('Load failure occurred', exc_info=e)
                 load_failure = True
     else:
         df_list = []
@@ -50,8 +54,8 @@ def load(src, selection, selected_rows, record_count, msgs):
                 df_list.append(tbl.table)
                 pbar.progress(iter / nbatches, text=msgs['wait'])
             logger.code_reached(Code.FETCH_DATA_LOAD_WITH_COUNT)
-        except:
-            logger.exception('Load failure occurred')
+        except Exception as e:
+            logger.exception('Load failure occurred', exc_info=e)
             load_failure = True
             
         if not load_failure and len(df_list)>0:
