@@ -46,12 +46,22 @@ def get_data_catalog():
     df = df.sort_values(by=["State","SourceName","TableType"])
     return df
 
-st.title('OpenPoliceData Explorer')
-st.caption("Explorer uses the [OpenPoliceData](https://openpolicedata.readthedocs.io/en/stable/documentation.html) Python library to access over 500 "+
-           "incident-level datasets from police departments around the United States "+
-           "including traffic stops, use of force, and officer-involved shootings data.")
+with st.sidebar:
+    st.title('OpenPoliceData Explorer')
+    st.caption("Explorer uses the [OpenPoliceData](https://openpolicedata.readthedocs.io/en/stable/documentation.html) Python library to access over 500 "+
+            "incident-level datasets from police departments around the United States "+
+            "including traffic stops, use of force, and officer-involved shootings data.")
 
 st.session_state['data_catalog'] = get_data_catalog()
 
 pg = st.navigation(["1_Download_Data.py", '2_Find_Datasets.py'], position='top')
 pg.run()
+
+st.info("Questions or Suggestions? Please reach out to us on our "
+            "[discussion board](https://github.com/openpolicedata/openpolicedata/discussions) or by [email](openpolicedata@gmail.com).\n\n"+
+            "NOTE: All data is downloaded directly from the source and is not altered in any way. "+
+            "Column names and codes may be difficult to understand. Check the data dictionary and "+
+            "source URLs for more information. If you still are having issues, feel free to reach out to us at the link above.")
+
+logger.log_coverage()
+st.session_state['is_starting_up'] = False

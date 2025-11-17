@@ -19,8 +19,19 @@ def init(level, __version__):
         st.session_state['last_selection'] = None
         st.session_state['is_starting_up'] = True  # Indicates that the app has just been instantiated
 
+        # Key order is important. It is used for reseting defaults properly. See clear_defaults.
+        st.session_state['default'] = {k:0 for k in ['state','source','table_type_general','table_type_sub','agency','year', 'url']}
+
         st.session_state['logger'].debug("***********DEBUG MODE*************")
 
     display_version(opd.__version__, __version__, st.__version__)
 
+
+def clear_defaults(start):
+    skip = True
+    for k in st.session_state['default'].keys():
+        if skip:
+            skip = k==start  # Reset everything after this
+        else:
+            st.session_state['default'][k]=0
     

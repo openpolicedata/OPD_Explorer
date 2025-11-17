@@ -3,11 +3,14 @@ import argparse
 from datetime import datetime
 import logging
 import pandas as pd
-import re
+from urllib.parse import urlparse
 
 from streamlit_logger import Code
-import load_data
+import utils
+from init import clear_defaults
 import openpolicedata as opd
+
+# TODO: UPDATE COVERAGE
 
 # Must add -- before arguments so that streamlit does not try to read our args
 # i.e. -- --debug
@@ -16,9 +19,6 @@ parser = argparse.ArgumentParser()
 parser.add_argument('-d', '--debug', action='store_true')
 args = parser.parse_args()
 level = logging.DEBUG if args.debug else logging.INFO
-
-NA_DISPLAY_VALUE = "NOT APPLICABLE"
-ALL = "ALL"
 
 load_failure = False
 selection = {}
@@ -30,23 +30,6 @@ now = datetime.now()
 
 api_data_types = ["ArcGIS",'Carto','CKAN','Socrata']
 
-@st.cache_data(show_spinner="Loading year information...")
-def get_years(selectbox_sources, selectbox_states, selectbox_table_types, selected_agency):
-    src = opd.Source(selectbox_sources, state=selectbox_states, agency=selected_agency)
-    years = src.get_years(table_type=selectbox_table_types, force=False)
-    years.sort(reverse=True)
-    return [str(x) if x!=opd.defs.NA else NA_DISPLAY_VALUE for x in years]
-
-@st.cache_data(show_spinner="Loading agency information...")
-def get_agencies(selectbox_sources, selectbox_states, selectbox_table_types, year, selected_agency,
-                 url_contains, id_contains):
-    src = opd.Source(selectbox_sources, state=selectbox_states, agency=selected_agency)
-    agencies = src.get_agencies(table_type=selectbox_table_types, year=year, url=url_contains, id=id_contains)
-    agencies.sort()
-    agencies.insert(0, ALL)
-    return agencies
-
-
 data_catalog = st.session_state['data_catalog']
 
 # Create columns to center text
@@ -57,34 +40,37 @@ st.subheader('Selected Dataset Details')
 # Populate sidebar with dropdown menus and get selected dataset
 with st.sidebar:
     st.header('Dataset Filters')
-    selectbox_states = st.selectbox('States', data_catalog['State'].unique(), 
+
+    states = data_catalog['State'].unique()
+    default_state = utils.get_default(states, st.session_state['default']['state'])
+    selectbox_states = st.selectbox('States', states, 
+                                    index=default_state,
+                                    on_change=clear_defaults,
+                                    args=['state'],
                                     help="Select a state to filter by. MULTIPLE indicates datasets that contain more than 1 state's data")
     logger.debug(f"Selected State: {selectbox_states}")
     selected_rows = data_catalog[data_catalog['State']==selectbox_states]
 
-    selectbox_sources = st.selectbox('Available Sources', selected_rows['SourceName'].unique(), 
+    sources = selected_rows['SourceName'].unique()
+    default_source = utils.get_default(sources, st.session_state['default']['source'])
+    selectbox_sources = st.selectbox('Available Sources', sources, 
+                                     index=default_source,
+                                     on_change=clear_defaults,
+                                     args=['source'],
                                      help="Select a source (typically a police department, sheriff's office, "
                                      "or a state (if data is for all agencies in a state))")
     logger.debug(f"Selected Source: {selectbox_sources}")
 
     selected_rows = selected_rows[selected_rows['SourceName']==selectbox_sources]
 
-    # Table types that may be split into multiple sub-tables
-    split_tables = ["COMPLAINTS", "CRASHES", "OFFICER-INVOLVED SHOOTINGS","USE OF FORCE"]
     table_types = selected_rows['TableType'].unique()
-    table_type_general = table_types.copy()
-    table_types_sub = [None for _ in range(len(table_types))]
-    for k,x in enumerate(table_types):
-        for y in split_tables:
-            m = re.search(y+r"\s?-\s?(.+)", x)
-            if m:
-                table_type_general[k] = y
-                table_types_sub[k] = m.group(1)
-                break
+    table_type_general, table_type_general_sort, table_types_sub = utils.split_tables(table_types)
 
-    table_type_general_sort = list(set(table_type_general))
-    table_type_general_sort.sort()
+    default_table_type_general = utils.get_default(table_type_general_sort, st.session_state['default']['table_type_general'])
     selectbox_table_types = st.selectbox('Available Table Types', table_type_general_sort, 
+                                         index=default_table_type_general,
+                                         on_change=clear_defaults,
+                                         args=['table_type_general'],
                                          help='Select a table type (such as TRAFFIC STOPS or USE OF FORCE).\n\n'+
                                          'NOTE: Some datasets are split across multiple tables where unique IDs indicate related data between tables. '+
                                          "For example, a use of force dataset could have two tables: one for incident details and one for persons involved. "+
@@ -101,7 +87,12 @@ with st.sidebar:
 
     if all([x is not None for x in table_types_sub]):
         logger.code_reached(Code.SUBTABLE_MENU)
+
+        default_table_type_sub = utils.get_default(table_types_sub, st.session_state['default']['table_type_sub'])
         selectbox_subtype = st.selectbox('Table Subcategory', table_types_sub, 
+                                index=default_table_type_sub,
+                                on_change=clear_defaults,
+                                args=['table_type_sub'],
                                 help=f'The {table_type_general[0]} dataset is split into the following tables that all may be of interest: '+
                                 f'{table_types_sub}. They likely use unique IDs to enable finding related data across tables.')
         logger.debug(f"Selected table subtype: {selectbox_subtype}")
@@ -118,7 +109,11 @@ with st.sidebar:
         # The data source table contains multiple agency options for this source
         # Usually, this occurs for counties where there is data for the county agency, 
         # such as the county sheriff, and for all agencies in the county (i.e. agency = MULTIPLE)
+        default_agency = utils.get_default(all_agencies_for_source, st.session_state['default']['agency'])
         selected_agency = st.selectbox('Available Agencies', all_agencies_for_source, 
+                                    index=default_agency,
+                                    on_change=clear_defaults,
+                                    args=['agency'],
                                     help='Select an agency (MULTIPLE indicates multiple agencies within the limits of the source location)')
         selected_rows = selected_rows[selected_rows['Agency'].isin(
             [selected_agency])]
@@ -128,7 +123,7 @@ with st.sidebar:
         logger.code_reached(Code.SINGLE_AGENCY_IN_TABLE)
 
     try:
-        years = get_years(selectbox_sources, selectbox_states, selection['table'], selected_agency)
+        years = utils.get_years(selectbox_sources, selectbox_states, selection['table'], selected_agency)
     except:
         logger.exception('')
         load_failure = True
@@ -141,14 +136,20 @@ with st.sidebar:
             # Data is a single file. Since the whole file has to be loaded, just let the user download
             # all years at once
             years = [f"{min(years)}-{max(years)}"]
+            default_year = 0
+        else:
+            default_year = utils.get_default(years, st.session_state['default']['year'])
 
         selectbox_years = st.selectbox('Available Years', years, 
+                                    index=default_year,
+                                    on_change=clear_defaults,
+                                    args=['year'],
                                     help='Select a year')
         logger.debug(f"Selected year: {selectbox_years}")
         
         selectbox_agencies = None
         selectbox_coverage = None
-        selection['year'] = selectbox_years if selectbox_years!=NA_DISPLAY_VALUE else opd.defs.NA
+        selection['year'] = selectbox_years if selectbox_years!=utils.NA_DISPLAY_VALUE else opd.defs.NA
         selection['year'] = int(selection['year']) if selection['year'].isdigit() else selection['year']
         matches = selected_rows['Year'] == selection['year']
         if matches.any():
@@ -180,21 +181,33 @@ with st.sidebar:
                 selected_rows = selected_rows[tf]
 
                 if len(selected_rows)>1:
-                    # There are multiple multi-year datasets that include the selected year
-                    start_years = selected_rows["coverage_start"].dt.strftime('%Y-%m-%d').to_list()
-                    end_years =   selected_rows["coverage_end"].dt.strftime('%Y-%m-%d').to_list()
+                    unique_urls = utils.get_unique_urls(selected_rows['URL'], selected_rows['dataset_id'])
 
-                    coverage = [f"{x} - {y}" for x,y in zip(start_years, end_years)]
-                    selectbox_coverage = st.selectbox('Select dataset date range to request selected year from', coverage, 
-                                    help='Multiple datasets have been identified containing the selected year. Select a data range to specify a specific/single dataset.')
+                    default_url=0
+                    if st.session_state['default']['url']!=0:
+                        full_unique = f"{st.session_state['default']['url']}: {st.session_state['default']['id']}"
+                        if full_unique in unique_urls:
+                            default_url = full_unique
+                        elif urlparse(st.session_state['default']['url']).hostname in unique_urls:
+                            default_url = urlparse(st.session_state['default']['url']).hostname
+                        else:
+                            default_url = st.session_state['default']['url']
+
+                        default_url,_ = utils.get_default(unique_urls, default_url)
                     
-                    selected_rows = selected_rows[[x==selectbox_coverage for x in coverage]]
+                    selectbox_url = st.selectbox(
+                        'Multiple Options: Select URL+ID', unique_urls,
+                        index=default_url,
+                        help='In rare cases, there are multiple datasets matching the selected parameters. Select URL and/or dataset ID to uniquely specify dataset.'
+                    )
+                    
+                    selected_rows = selected_rows[[x==selectbox_url for x in unique_urls]]
                     logger.code_reached(Code.MULTIPLE_MULTIYEAR_DATA_OVERLAP)
 
 
         if selected_rows.iloc[0]["Agency"]==opd.defs.MULTI and selected_rows.iloc[0]["DataType"] in api_data_types:
             try:
-                agencies = get_agencies(selectbox_sources, selectbox_states, selection['table'], selected_rows.iloc[0]["Year"], selected_agency,
+                agencies = utils.get_agencies(selectbox_sources, selectbox_states, selection['table'], selected_rows.iloc[0]["Year"], selected_agency,
                                         selected_rows.iloc[0]["URL"], selected_rows.iloc[0]["dataset_id"])
                 logger.code_reached(Code.GET_AGENCIES)
             except:
@@ -242,7 +255,7 @@ else:
         text+=f"**{idx}**: {ds[idx]}  \n"
     st.info(text)
 
-    new_selection = [selectbox_states, selectbox_sources, selection['table'], selectbox_years, selectbox_agencies, selected_agency, selectbox_coverage]
+    new_selection = [selected_rows.iloc[0]["URL"], selected_rows.iloc[0]["dataset_id"]]
     if st.session_state['last_selection'] != new_selection:
         # New selection. Delete previously downloaded data
         logger.code_reached(Code.CHANGE_SELECTION)
@@ -256,7 +269,7 @@ else:
 
     selection['agency'] = None
     agency_name = selected_rows.iloc[0]["Agency"]
-    if selectbox_agencies is not None and selectbox_agencies!=ALL:
+    if selectbox_agencies is not None and selectbox_agencies!=utils.ALL:
         logger.code_reached(Code.SINGLE_AGENCY_SELECT)
         selection['agency'] = selectbox_agencies
         agency_name = selectbox_agencies
@@ -294,7 +307,7 @@ else:
                 msgs['no_data'] = f"{msgs['no_data']} when filtering for agency {selection['agency']}"
 
             if not load_failure:
-                data_as_csv_txt, nrows, df_prev, load_failure = load_data.load(src, selection, selected_rows, record_count, msgs)
+                data_as_csv_txt, nrows, df_prev, load_failure = utils.load(src, selection, selected_rows, record_count, msgs)
 
             if load_failure:
                 st.error(failure_msg)
@@ -326,13 +339,3 @@ else:
         # Add some space
         for _ in range(0):
             st.text("  ")
-
-    st.info("Questions or Suggestions? Please reach out to us on our "
-            "[discussion board](https://github.com/openpolicedata/openpolicedata/discussions) or by [email](openpolicedata@gmail.com).\n\n"+
-            "NOTE: All data is downloaded directly from the source and is not altered in any way. "+
-            "Column names and codes may be difficult to understand. Check the data dictionary and "+
-            "source URLs for more information. If you still are having issues, feel free to reach out to us at the link above.")
-
-logger.log_coverage()
-
-st.session_state['is_starting_up'] = False
