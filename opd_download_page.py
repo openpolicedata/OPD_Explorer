@@ -54,7 +54,17 @@ with st.sidebar:
 
 st.session_state['data_catalog'] = get_data_catalog()
 
-pg = st.navigation(["1_Download_Data.py", '2_Find_Datasets.py'], position='top')
+page2 = '2_Find_Datasets.py'
+pg = st.navigation(["1_Download_Data.py", page2], position='top')
+
+query = st.query_params.to_dict()
+if st.session_state['is_starting_up'] and len(query)>0:
+    # URL contains query. Set defaults from query.
+    key = 'datasets' if st.context.url.endswith(page2[2:].strip('.py')) else 'download'
+    for k,v in query.items():
+        if k in st.session_state['default'][key]:
+            st.session_state['default'][key][k] = v
+
 pg.run()
 
 st.info("Questions or Suggestions? Please reach out to us on our "
@@ -65,3 +75,4 @@ st.info("Questions or Suggestions? Please reach out to us on our "
 
 logger.log_coverage()
 st.session_state['is_starting_up'] = False
+# st.query_params.clear()
