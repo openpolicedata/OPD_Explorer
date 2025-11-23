@@ -104,7 +104,7 @@ if st.button(label, disabled=disabled):
 npi_url = 'https://national.cpdp.co/'
 if selectbox_sources==ALL:
     if selectbox_states!=ALL and selectbox_states!=opd.defs.MULTI:
-        test_url = npi_url + 'states/' + selectbox_states.replace(' ','-') + '?activeOnly=false'
+        test_url = npi_url + 'states/' + selectbox_states.replace(' ','-')
         r = requests.get(test_url, timeout=3)
         try:
             r.raise_for_status()
@@ -117,7 +117,7 @@ elif len(selection)>0:
         selection['Agency'].nunique()==1 and selection['Agency'].iloc[0]!=opd.defs.MULTI and \
         pd.notnull(selection['AgencyFull'].iloc[0]) and len(selection['AgencyFull'].iloc[0])>0:
         
-        test_url = npi_url + 'states/' + selection['State'].iloc[0].replace(' ','-') + '?activeOnly=false'
+        test_url = npi_url + 'states/' + selection['State'].iloc[0].replace(' ','-') + '?'
 
         # Test if state URL exists
         r = requests.get(test_url, timeout=3)
@@ -125,14 +125,14 @@ elif len(selection)>0:
             r.raise_for_status()
             if 'placeholder="Search Data"' in r.text:
                 # There currently is no way to tell if agency URL exists. If it does not, it will go to the state URL and show no results
-                test_url += '&agency=' + selection['AgencyFull'].iloc[0].replace(' ','+')
+                test_url += 'agency=' + selection['AgencyFull'].iloc[0].replace(' ','+')
                 npi_url = test_url  # URL contains placeholders for data because data exists
         except:
             pass
 
 st.subheader('Other Data Sources')
 st.markdown('[OpenPoliceData](https://openpolicedata.readthedocs.io/) recommends these additional police data sources:')
-st.markdown('**National Police Index** (Police Employment History): '+npi_url)
+st.markdown(f'**National Police Index** (Police Employment History): '+npi_url)
 st.markdown('**Police Data Access Point**: https://pdap.io/')
 st.markdown('**Stanford Open Policing Project**: https://openpolicing.stanford.edu/')
 st.markdown('**Mapping Police Violence**: https://mappingpoliceviolence.us/')
