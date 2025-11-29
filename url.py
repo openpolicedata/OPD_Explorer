@@ -29,21 +29,26 @@ def get_opd_explorer_dataset_url(state=None, source=None, table_type=None, url_t
 
     url = 'https://openpolicedata.streamlit.app' if url_type!='local' else 'http://localhost:8501'
 
-    url += '/Find_Datasets/?'
+    url += '/Find_Datasets/'
 
     df = opd.datasets.query()
+
+    pre = '?'
     if state:
         df = df[df['State']==state]
-        url+='&'+'state'+'='+state
+        url+=pre+'state'+'='+state
+        pre = '&'
 
     if source:
         df = df[df['SourceName']==source]
-        url+='&'+'source'+'='+source
+        url+=pre+'source'+'='+source
+        pre = '&'
 
     if table_type:
         df['TableTypeGeneral'],_,_ = utils.split_tables(df['TableType'].tolist())
         df = df[df['TableTypeGeneral']==table_type]
-        url+='&'+'table'+'='+table_type
+        url+=pre+'table'+'='+table_type
+        pre = '&'
 
     return url if len(df)>0 else None
 

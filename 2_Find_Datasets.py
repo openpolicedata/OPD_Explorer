@@ -5,56 +5,55 @@ import pandas as pd
 
 import utils
 from init import clear_defaults
+import dashboard_utils
 
 data_catalog = st.session_state["data_catalog"]
 selection = data_catalog
-
-ALL = "---ALL---"
 
 defaults = st.session_state['default']['datasets']
 
 with st.sidebar:
     st.header('Dataset Filters')
     options = data_catalog['State'].unique()
-    options_all = [ALL]
+    options_all = [utils.ALL]
     options_all.extend(options)
-    default_state = utils.get_default(options_all, defaults['state'])
+    default_state = dashboard_utils.get_default('state', options_all, defaults)
     selectbox_states = st.selectbox('States', options_all, 
                                     index=default_state,
                                     on_change=clear_defaults,
                                     args=['datasets', 'state'],
                                     help="Select a state to filter by. MULTIPLE indicates datasets that contain more than 1 state's data")
     
-    if selectbox_states!=ALL:
+    if selectbox_states!=utils.ALL:
         selection = selection[selection['State']==selectbox_states]
 
     options = selection['SourceName'].unique()
-    options_all = [ALL]
+    options_all = [utils.ALL]
     options_all.extend(options)
-    default_source = utils.get_default(options_all, defaults['source'])
-    selectbox_sources = st.selectbox('Available Sources', options_all, 
+    default_source = dashboard_utils.get_default('source', options_all, defaults)
+    selectbox_sources = st.selectbox('Sources', options_all, 
                                      index=default_source,
                                      on_change=clear_defaults,
                                      args=['datasets', 'source'],
                                      help="Select a source (typically a police department, sheriff's office, "
                                      "or a state (if data is for all agencies in a state))")
     
-    if selectbox_sources!=ALL:
+    if selectbox_sources!=utils.ALL:
         selection = selection[selection['SourceName']==selectbox_sources]
 
     table_types = selection['TableType'].unique()
     table_type_general, table_type_general_sort, _ = utils.split_tables(table_types)
 
-    options_all = [ALL]
+    options_all = [utils.ALL]
     options_all.extend(table_type_general_sort)
-    default_table = utils.get_default(options_all, defaults['table'])
-    selectbox_table_types = st.selectbox('Available Table Types', options_all, 
+    default_table = dashboard_utils.get_default('table', options_all, defaults)
+    selectbox_table_types = st.selectbox('Table Types', options_all, 
                                          index=default_table,
                                          on_change=clear_defaults,
                                          args=['datasets', 'table'],
                                          help='Select a table type (such as TRAFFIC STOPS or USE OF FORCE)')
     
-    if selectbox_table_types!=ALL:
+    if selectbox_table_types!=utils.ALL:
         m = [x==selectbox_table_types for x in table_type_general]
         table_types = [x for k,x in enumerate(table_types) if m[k]]
         selection = selection[selection['TableType'].isin(table_types)]
@@ -102,8 +101,8 @@ if st.button(label, disabled=disabled):
         st.switch_page("1_Download_Data.py")
 
 npi_url = 'https://national.cpdp.co/'
-if selectbox_sources==ALL:
-    if selectbox_states!=ALL and selectbox_states!=opd.defs.MULTI:
+if selectbox_sources==utils.ALL:
+    if selectbox_states!=utils.ALL and selectbox_states!=opd.defs.MULTI:
         test_url = npi_url + 'states/' + selectbox_states.replace(' ','-')
         r = requests.get(test_url, timeout=3)
         try:

@@ -6,8 +6,6 @@ import pandas as pd
 import streamlit as st
 import utils
 
-from streamlit_logger import Code
-
 @st.cache_data(show_spinner="Loading year information...")
 def get_years(selectbox_sources, selectbox_states, selectbox_table_types, selected_agency):
     src = opd.Source(selectbox_sources, state=selectbox_states, agency=selected_agency)
@@ -45,9 +43,8 @@ def load(src, selection, selected_rows, record_count, msgs):
                     # For large datasets on Streamlit cloud, OPD Explorer fails when converting the entire file to a DataFrame
                     # Instead, just download data and only convert enough rows to a DataFrame to create the preview
                     is_csv = True
-                    data_from_url = data_loaders.download_zip_and_extract(selected_rows.iloc[0]["URL"], block_size=2**20, pbar=True)
-                    logger.code_reached(Code.FETCH_DATA_STANFORD)
-                    nrows = data_loaders.count_csv_rows(data_from_url)
+                    data_from_url = data_loaders.data_loader.download_zip_and_extract(selected_rows.iloc[0]["URL"], block_size=2**20, pbar=True)
+                    nrows = data_loaders.csv_class.count_csv_rows(data_from_url)
                 else:
                     logger.info(f"Loading data for for {selection['year']=}, {selection['table']=}, {selection['agency']=}, "+\
                                     f'{selected_rows.iloc[0]["URL"]=}, {selected_rows.iloc[0]["dataset_id"]=}')
@@ -55,7 +52,6 @@ def load(src, selection, selected_rows, record_count, msgs):
                                                 url=selected_rows.iloc[0]["URL"], 
                                                 id=selected_rows.iloc[0]["dataset_id"],
                                                 verbose=False).table
-                    logger.code_reached(Code.FETCH_DATA_LOAD_WO_COUNT)
                     nrows = len(data_from_url)
             except Exception as e:
                 logger.exception('Load failure occurred', exc_info=e)
@@ -73,7 +69,6 @@ def load(src, selection, selected_rows, record_count, msgs):
                 iter+=1
                 df_list.append(tbl.table)
                 pbar.progress(iter / nbatches, text=msgs['wait'])
-            logger.code_reached(Code.FETCH_DATA_LOAD_WITH_COUNT)
         except Exception as e:
             logger.exception('Load failure occurred', exc_info=e)
             load_failure = True
@@ -83,11 +78,10 @@ def load(src, selection, selected_rows, record_count, msgs):
         nrows = len(data_from_url)
 
     if not load_failure and nrows>0:
-        nrows_prev = 20
         if is_csv:
-            df_prev = pd.read_csv(BytesIO(data_from_url), encoding_errors='surrogateescape', skiprows=0, nrows=nrows_prev)
+            df_prev = pd.read_csv(BytesIO(data_from_url), encoding_errors='surrogateescape', skiprows=0, nrows=utils.NROWS_PREVIEW)
         else:
-            df_prev = data_from_url.head(nrows_prev)
+            df_prev = data_from_url.head(utils.NROWS_PREVIEW)
             data_from_url = data_from_url.to_csv(index=False)
             data_from_url = data_from_url.encode('utf-8', 'surrogateescape')
 
@@ -95,10 +89,22 @@ def load(src, selection, selected_rows, record_count, msgs):
         try:
             # Replace non-ASCII characters with '' because st.dataframe will throw an error otherwise
             df_prev = df_prev.replace({r'[^\x00-\x7F]+':''}, regex=True).infer_objects()
-            logger.code_reached(Code.PREVIEW_REGEXREP_SUCCESS)
         except:
             pass
 
         pd.reset_option('future.no_silent_downcasting')
         
     return data_from_url, nrows, df_prev, load_failure
+
+
+def get_default(name, vals, default_val):
+    if isinstance(default_val, dict):
+        default_val = default_val[name]
+
+    default = utils.get_default(vals, default_val, required=False)
+
+    if default==None:
+        st.toast(f"ERROR: Requested {name}={default_val} not found", duration='infinite', icon=":material/error:")
+        default = 0
+
+    return default

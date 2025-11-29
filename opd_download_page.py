@@ -24,7 +24,7 @@ st.set_page_config(
 # https://discuss.streamlit.io/t/command-line-arguments/386/4
 parser = argparse.ArgumentParser()
 parser.add_argument('-d', '--debug', action='store_true')
-args = parser.parse_args()
+args, _ = parser.parse_known_args()
 level = logging.DEBUG if args.debug else logging.INFO
 
 init.init(level, __version__)
@@ -60,10 +60,17 @@ pg = st.navigation(["1_Download_Data.py", page2], position='top')
 query = st.query_params.to_dict()
 if st.session_state['is_starting_up'] and len(query)>0:
     # URL contains query. Set defaults from query.
-    key = 'datasets' if st.context.url.endswith(page2[2:].strip('.py')) else 'download'
+    if st.context.url is None:
+        # App is being tested
+        key = 'datasets' if pg.title=='Find Datasets' else 'download'
+    else:
+        # Deployed app
+        key = 'datasets' if st.context.url.endswith(page2[2:].strip('.py')) else 'download'
     for k,v in query.items():
         if k in st.session_state['default'][key]:
             st.session_state['default'][key][k] = v
+        elif k=='table' and 'table_type_general' in st.session_state['default'][key]: # Handle shorthand
+            st.session_state['default'][key]['table_type_general'] = v
 
 pg.run()
 
@@ -73,6 +80,4 @@ st.info("Questions or Suggestions? Please reach out to us on our "
             "Column names and codes may be difficult to understand. Check the data dictionary and "+
             "source URLs for more information. If you still are having issues, feel free to reach out to us at the link above.")
 
-logger.log_coverage()
 st.session_state['is_starting_up'] = False
-# st.query_params.clear()

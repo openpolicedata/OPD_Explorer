@@ -1,8 +1,10 @@
 import re
 from urllib.parse import urlparse
+import pandas as pd
 
 NA_DISPLAY_VALUE = "NOT APPLICABLE"
-ALL = "ALL"
+ALL = "---ALL---"
+NROWS_PREVIEW = 20
 
 def get_default(vals, default_val, required=True):
     if default_val!=0:
@@ -12,7 +14,7 @@ def get_default(vals, default_val, required=True):
         elif required:
             raise ValueError(f"Unable to find requested default {default_val} in {vals}")
         else:
-            default_val_index = 0
+            default_val_index = None
     else:
         default_val_index = 0
 
@@ -58,9 +60,11 @@ def get_unique_urls(urls, dataset_ids):
     for u,d in zip(urls, dataset_ids):
         if urls.count(u)==1 or d is None:
             o = urlparse(u)
+            if o.hostname==None:
+                o = urlparse('https://'+u)
             if sum([o.hostname in x for x in urls])<2:
                 # hostname is unique
-                unique_urls.append(o.hostname)
+                unique_urls.append(o.hostname.lstrip('www.'))
             else:
                 unique_urls.append(u)
         else:

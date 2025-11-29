@@ -13,11 +13,13 @@ def display_version(opd_version, exp_version, st_version):
     st.session_state['logger'].info(f"\tOPD Explorer: {exp_version}")
     st.session_state['logger'].info(f"\tStreamlit: {st_version}")  # 4/28/2025: Working ver =  1.44.1
 
+
 def init(level, __version__):
-    if 'logger' not in st.session_state:
+    if 'is_starting_up' not in st.session_state or st.session_state['is_starting_up']:  # st.session_state['is_starting_up']=True is only needed for testing
         st.session_state['logger'] = create_logger(name = 'opd-app', level = level)
         st.session_state['last_selection'] = None
         st.session_state['is_starting_up'] = True  # Indicates that the app has just been instantiated
+        st.session_state['preview'] = None
 
         # Key order is important. It is used for reseting defaults properly. See clear_defaults.
         st.session_state['default'] = {
@@ -27,10 +29,12 @@ def init(level, __version__):
 
         st.session_state['logger'].debug("***********DEBUG MODE*************")
 
-    display_version(opd.__version__, __version__, st.__version__)
+        display_version(opd.__version__, __version__, st.__version__)
 
 
 def clear_defaults(page, start):
+    # Clearing defaults results in changing of value
+    # Can safely clear dependent defaults (i.e. defaults below changed parameter) of changed parameter
     skip = True
     for k in st.session_state['default'][page].keys():
         if skip:
