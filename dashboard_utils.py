@@ -108,3 +108,13 @@ def get_default(name, vals, default_val):
         default = 0
 
     return default
+
+def set_defaults_to_go_to_dataset(selected_ds):
+    st.session_state['default']['download']['state'] = selected_ds['State']
+    st.session_state['default']['download']['source'] = selected_ds['SourceName']
+    st.session_state['default']['download']['table_type_general'], _, st.session_state['default']['download']['table_type_sub'] = utils.split_tables(selected_ds['TableType'])
+    st.session_state['default']['download']['agency'] = selected_ds['Agency']
+    years = get_years(selected_ds['SourceName'], selected_ds['State'], selected_ds['TableType'], selected_ds['Agency'])
+    st.session_state['default']['download']['year'] = years[0]
+    st.session_state['default']['download']['url'] = selected_ds['URL']
+    st.session_state['default']['download']['id'] = selected_ds['dataset_id']

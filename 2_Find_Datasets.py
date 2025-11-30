@@ -81,22 +81,7 @@ else:
 if st.button(label, disabled=disabled):
     if len(event.selection['rows'])>0:
         # Go to Download page with selected filter
-        selected_ds = selection.iloc[event.selection['rows'][0]]
-
-        st.session_state['default']['download']['state'] = selected_ds['State']
-        st.session_state['default']['download']['source'] = selected_ds['SourceName']
-        st.session_state['default']['download']['table_type_general'], _, st.session_state['default']['download']['table_type_sub'] = utils.split_tables(selected_ds['TableType'])
-        st.session_state['default']['download']['agency'] = selected_ds['Agency']
-        src = opd.Source(st.session_state['default']['download']['source'], 
-                         state=st.session_state['default']['download']['state'], 
-                         agency=st.session_state['default']['download']['agency'])
-        year = str(max(src.get_years(table_type=selected_ds['TableType'], force=False, datasets=selected_ds)))
-        year = year if year!='NONE' else utils.NA_DISPLAY_VALUE
-        st.session_state['default']['download']['year'] = year
-        st.session_state['default']['download']['url'] = selected_ds['URL']
-        st.session_state['default']['download']['id'] = selected_ds['dataset_id']
-
-        print(st.session_state['default']['download'])
+        dashboard_utils.set_defaults_to_go_to_dataset(selection.iloc[event.selection['rows'][0]])
 
         st.switch_page("1_Download_Data.py")
 
