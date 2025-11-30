@@ -7,6 +7,8 @@ import utils
 from init import clear_defaults
 import dashboard_utils
 
+st.html('<b>Filter for Dataset</b> <span style="color:red">⇨</span> <b>Click Row Checkbox</b> <span style="color:red">⇨</span> <b>Go to Selected Dataset</b>')
+
 data_catalog = st.session_state["data_catalog"]
 selection = data_catalog
 

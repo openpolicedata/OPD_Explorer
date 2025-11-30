@@ -24,7 +24,7 @@ api_data_types = ["ArcGIS",'Carto','CKAN','Socrata']
 data_catalog = st.session_state['data_catalog']
 
 # Create columns to center text
-st.markdown("Find Dataset ➡️ Retrieve Data ➡️ Download CSV")
+st.html('<b>Filter for Dataset</b> <span style="color:red">⇨</span> <b>Retrieve Data</b> <span style="color:red">⇨</span> <b>Download CSV</b>')
 
 st.subheader('Selected Dataset Details')
 
