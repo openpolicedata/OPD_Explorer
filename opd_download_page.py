@@ -66,6 +66,8 @@ if st.session_state['is_starting_up'] and len(query)>0:
     else:
         # Deployed app
         key = 'datasets' if st.context.url.endswith(page2[2:].strip('.py')) else 'download'
+
+    logger.info(f'Query: {query}')
     for k,v in query.items():
         if k in st.session_state['default'][key]:
             st.session_state['default'][key][k] = v

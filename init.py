@@ -1,17 +1,22 @@
-from datetime import datetime
+from datetime import datetime, timezone
 import streamlit as st
 from streamlit_logger import create_logger
 import openpolicedata as opd
 
 @st.cache_data()
 def display_version(opd_version, exp_version, st_version):
-    now = datetime.now()
+    now = datetime.now(timezone.utc)
 
     st.session_state['logger'].info(now)
     st.session_state['logger'].info("VERSIONS:")
     st.session_state['logger'].info(f"\tOpenPoliceData: {opd_version}")
     st.session_state['logger'].info(f"\tOPD Explorer: {exp_version}")
     st.session_state['logger'].info(f"\tStreamlit: {st_version}")  # 4/28/2025: Working ver =  1.44.1
+    st.session_state['logger'].info(f'URL: {st.context.url}')
+    st.session_state['logger'].info(f'IP: {st.context.ip_address}')
+    st.session_state['logger'].info(f'Locale: {st.context.locale}')
+    st.session_state['logger'].info(f'User Timezone: {st.context.timezone}')
+    st.session_state['logger'].info(f'User Timezone Offset: {st.context.timezone_offset}')
 
 
 def init(level, __version__):
