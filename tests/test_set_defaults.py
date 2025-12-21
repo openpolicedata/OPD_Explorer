@@ -45,13 +45,14 @@ def test_page1_subtable(app_page1):
     app.run()
 
     url = 'https://services.arcgis.com/aJ16ENn1AaqdFlqx/arcgis/rest/services/APDTrafficStopTables/FeatureServer/1'
+    id = np.nan
 
     assert get_state_filter(app).value==d['state']
     assert get_source_filter(app).value==d['source']
     assert get_table_filter(app).value==d['table_type_general']
     assert get_widget(app.sidebar.selectbox, 'Table Subcategory').value==d['table_type_sub']
 
-    assert app.session_state['last_selection'][0]==url
+    check_last_selection(app, url, id)
     
     # Change the filter values to trigger resets
     app.session_state['default']['download'] = deepcopy(d)
@@ -115,9 +116,7 @@ def test_page1_multiple_urls(app_page1, state, source, table, year, id, url):
 
     assert get_widget(app.sidebar.selectbox, 'Multiple Options: Select URL+ID').value==url_id
 
-    assert app.session_state['last_selection'][0]==d['url']
-    assert (pd.isnull(app.session_state['last_selection'][1]) and pd.isnull(d['id'])) or \
-        app.session_state['last_selection'][1]==d['id']
+    check_last_selection(app, url, id)
     
     # Change the filter values to trigger resets
     app.session_state['default']['download'] = deepcopy(d)
@@ -165,9 +164,7 @@ def test_page1_multiple_agencies(app_page1):
     assert get_widget(app.sidebar.selectbox, 'Agencies').value==d['agency']
     assert get_year_filter(app).value==d['year']
 
-    assert app.session_state['last_selection'][0]==url
-    assert (pd.isnull(app.session_state['last_selection'][1]) and pd.isnull(id)) or \
-        app.session_state['last_selection'][1]==id
+    check_last_selection(app, url, id)
     
     # Change the filter values from top to bottom to trigger resets
     app.session_state['default']['download'] = deepcopy(d)

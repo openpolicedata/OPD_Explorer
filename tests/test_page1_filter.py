@@ -42,9 +42,7 @@ def test_basic_multiyear_file(app):
     year = f"{df.iloc[0]['coverage_start'].year}-{df.iloc[0]['coverage_end'].year}"
     assert get_year_filter(app).value==year
 
-    assert app.session_state['last_selection'][0]==url
-    assert (pd.isnull(app.session_state['last_selection'][1]) and pd.isnull(id)) or \
-        app.session_state['last_selection'][1]==id
+    check_last_selection(app, url, id)
 
 
 def test_basic_singleyear(app):
@@ -66,9 +64,7 @@ def test_basic_singleyear(app):
     assert get_table_filter(app).value==tbl
     assert get_year_filter(app).value==year
 
-    assert app.session_state['last_selection'][0]==url
-    assert (pd.isnull(app.session_state['last_selection'][1]) and pd.isnull(id)) or \
-        app.session_state['last_selection'][1]==id
+    check_last_selection(app, url, id)
 
 
 def test_multiple_urls_match(app):
@@ -92,9 +88,7 @@ def test_multiple_urls_match(app):
     assert get_year_filter(app).value==year
     assert get_widget(app.sidebar.selectbox, 'Multiple Options: Select URL+ID').value==url
 
-    assert app.session_state['last_selection'][0]==url
-    assert (pd.isnull(app.session_state['last_selection'][1]) and pd.isnull(id)) or \
-        app.session_state['last_selection'][1]==id
+    check_last_selection(app, url, id)
 
 def test_subtable_and_NA_year(app):
     state = 'North Carolina'
@@ -118,11 +112,13 @@ def test_subtable_and_NA_year(app):
     assert get_year_filter(app).value==year
     assert get_widget(app.sidebar.selectbox, 'Table Subcategory').value==subtable
 
-    assert len(app.markdown)>0 and 'Related tables' in app.markdown[-1].value
+    for m in app.markdown:
+        if 'Related tables' in m.value:
+            break
+    else:
+        raise ValueError('Unable to find related table text')
 
-    assert app.session_state['last_selection'][0]==url
-    assert (pd.isnull(app.session_state['last_selection'][1]) and pd.isnull(id)) or \
-        app.session_state['last_selection'][1]==id
+    check_last_selection(app, url, id)
 
 
 def test_multiple_agencies_for_source(app):
@@ -147,9 +143,7 @@ def test_multiple_agencies_for_source(app):
     assert get_year_filter(app).value==year
     assert get_widget(app.sidebar.selectbox, 'Agencies').value==agency
 
-    assert app.session_state['last_selection'][0]==url
-    assert (pd.isnull(app.session_state['last_selection'][1]) and pd.isnull(id)) or \
-        app.session_state['last_selection'][1]==id
+    check_last_selection(app, url, id)
     
 
 def test_source_contains_multiple_agencies(app):
@@ -174,6 +168,4 @@ def test_source_contains_multiple_agencies(app):
     assert get_year_filter(app).value==year
     assert get_widget(app.sidebar.selectbox, 'Agencies').value==agency
 
-    assert app.session_state['last_selection'][0]==url
-    assert (pd.isnull(app.session_state['last_selection'][1]) and pd.isnull(id)) or \
-        app.session_state['last_selection'][1]==id
+    check_last_selection(app, url, id)

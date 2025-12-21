@@ -1,26 +1,4 @@
-from enum import Enum
 import logging
-from streamlit import runtime
-from streamlit.runtime.scriptrunner import get_script_run_ctx
-import types
-
-
-def get_remote_ip() -> str:
-    """Get remote ip."""
-
-    try:
-        ctx = get_script_run_ctx()
-        if ctx is None:
-            return None
-
-        session_info = runtime.get_instance().get_client(ctx.session_id)
-        if session_info is None:
-            return None
-    except Exception as e:
-        return None
-
-    return session_info.request.remote_ip
-
 
 # https://discuss.streamlit.io/t/streamlit-duplicates-log-messages-when-stream-handler-is-added/16426/4
 def create_logger(name, level=logging.INFO, file=None, addtime=False):

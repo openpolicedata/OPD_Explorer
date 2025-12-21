@@ -239,7 +239,9 @@ else:
         text+=f"**{idx}**: {ds[idx]}  \n"
     st.info(text)
 
-    new_selection = [selected_rows.iloc[0]["URL"], selected_rows.iloc[0]["dataset_id"]]
+    new_selection = [selected_rows.iloc[0]["URL"]]
+    if pd.notnull(selected_rows.iloc[0]["dataset_id"]):
+        new_selection.append(selected_rows.iloc[0]["dataset_id"])
     if st.session_state['last_selection'] != new_selection:
         # New selection. Delete previously downloaded data
         logger.debug("Resetting download button")
@@ -267,13 +269,13 @@ else:
     if not can_load_partial:
         st.caption('Partial load of this dataset is not possible so previewing data will load entire dataset. User may want to just download the data to view contents.')
 
-    col1, col2 = st.columns(2, width=300)
+    col1, col2, col3 = st.columns(3, width=400, vertical_alignment='center')
+    st.markdown("**NOTE**: Download from source website may be slow. User can continue using the dashboard while data downloads in background.")
 
     with col1:
-        popover = st.popover("Preview Data", help='Load and show a specified number of rows')
+        nrows = st.number_input('Preview Rows', min_value=1, value=20, format="%d")
 
-    nrows = popover.number_input('Number of Rows', min_value=1, value=20, format="%d")
-    if popover.button('Preview', disabled=prev_disabled):
+    if col2.button('Preview', disabled=prev_disabled):
         with st.empty(): # This is used to replace the spinner after it is no longer needed
             st.session_state['csv_text_output'], st.session_state['preview'], load_failure = dashboard_utils.load(selected_rows, selection, nrows)
 
@@ -282,26 +284,28 @@ else:
                 st.error(failure_msg)
             elif len(st.session_state['preview'])>0:
                 logger.info(f"Data downloaded from URL. Total of {len(st.session_state['preview'])} rows")
-                st.text("  ")
             else:
                 st.text(no_data_msg)
                 logger.info("No data found")
 
-    with col2:
-        csv_filename = opd.data.get_csv_filename(selected_rows.iloc[0]["State"], selected_rows.iloc[0]["SourceName"], 
+    csv_filename = opd.data.get_csv_filename(selected_rows.iloc[0]["State"], selected_rows.iloc[0]["SourceName"], 
                                                 agency_name , selected_rows.iloc[0]["TableType"], orig_year if load_file else selection['year'])
-        def download():
-            csv_data, _, load_failure = dashboard_utils.load_preview(selected_rows, selection, nrows)
+    
+    csv_text_output = st.session_state['csv_text_output']
+    def download():
+        if not csv_text_output:
+            csv_data, _, load_failure = dashboard_utils.load(selected_rows, selection, logger=logger, use_streamlit=False)
             if load_failure:
                 raise ValueError(failure_msg)
+        else:
+            csv_data = csv_text_output
+            logger.info(f"Downloading previewed data : {selected_rows.iloc[0]['URL']}, {selected_rows.iloc[0]['dataset_id']}, "+\
+                        f'{selected_rows.iloc[0]["SourceName"]}, {selected_rows.iloc[0]["State"]}, {selected_rows.iloc[0]["Agency"]}')
 
-            logger.info('Download complete!!!!!')
-            return csv_data
-        
-        data = st.session_state['csv_text_output'] if st.session_state['csv_text_output'] else download
-        if st.download_button('Download CSV', data=data , file_name=csv_filename, mime='text/csv'):
-            logger.info('Download complete!!!!!')
-                
+        logger.info('Download complete!!!!!')
+        return csv_data
+    
+    col3.download_button('Download CSV', data=download , file_name=csv_filename, mime='text/csv')
 
     if len(st.session_state['preview'])>0:
         st.divider()
