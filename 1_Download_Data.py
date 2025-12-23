@@ -17,9 +17,6 @@ now = datetime.now()
 
 data_catalog = st.session_state['data_catalog']
 
-# Create columns to center text
-st.html('<b>Filter for Dataset</b> <span style="color:red">⇨</span> <b>Retrieve Data</b> <span style="color:red">⇨</span> <b>Download CSV</b>')
-
 st.subheader('Selected Dataset Details')
 
 defaults = st.session_state['default']['download']
