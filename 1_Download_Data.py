@@ -266,8 +266,11 @@ else:
     if not can_load_partial:
         st.caption('Partial load of this dataset is not possible so previewing data will load entire dataset. User may want to just download the data to view contents.')
 
-    col1, col2, col3 = st.columns(3, width=400, vertical_alignment='center')
+    col0, col3 = st.columns(2, width=500, vertical_alignment='center', gap='large')
     st.markdown("**NOTE**: Download from source website may be slow. User can continue using the dashboard while data downloads in background.")
+
+    box = col0.columns(1, border=True)
+    col1, col2 = box[0].columns(2, vertical_alignment='bottom')
 
     with col1:
         nrows = st.number_input('Preview Rows', min_value=1, value=20, format="%d")
