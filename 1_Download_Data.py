@@ -1,6 +1,5 @@
 import streamlit as st
 from datetime import datetime
-import logging
 import pandas as pd
 from urllib.parse import urlparse
 
@@ -9,22 +8,14 @@ import utils
 from init import clear_defaults
 import openpolicedata as opd
 
-# TODO: UPDATE COVERAGE
-
 load_failure = False
 selection = {}
-msgs = {}
 
 logger = st.session_state['logger']
 
 now = datetime.now()
 
-api_data_types = ["ArcGIS",'Carto','CKAN','Socrata']
-
 data_catalog = st.session_state['data_catalog']
-
-# Create columns to center text
-st.html('<b>Filter for Dataset</b> <span style="color:red">⇨</span> <b>Retrieve Data</b> <span style="color:red">⇨</span> <b>Download CSV</b>')
 
 st.subheader('Selected Dataset Details')
 
@@ -120,7 +111,7 @@ with st.sidebar:
         load_failure = True
 
     if not load_failure:
-        load_file =  len(selected_rows) == 1 and selected_rows.iloc[0]["DataType"] not in api_data_types and \
+        load_file =  len(selected_rows) == 1 and selected_rows.iloc[0]["DataType"] not in utils.API_DATA_TYPES and \
             selected_rows.iloc[0]['Year']==opd.defs.MULTI
         if load_file:
             logger.debug("Single file load mode")
@@ -196,7 +187,7 @@ with st.sidebar:
                     selected_rows = selected_rows[[x==selectbox_url for x in unique_urls]]
 
 
-        if selected_rows.iloc[0]["Agency"]==opd.defs.MULTI and selected_rows.iloc[0]["DataType"] in api_data_types:
+        if selected_rows.iloc[0]["Agency"]==opd.defs.MULTI and selected_rows.iloc[0]["DataType"] in utils.API_DATA_TYPES:
             try:
                 agencies = dashboard_utils.get_agencies(selectbox_sources, selectbox_states, selection['table'], selected_rows.iloc[0]["Year"], selected_agency,
                                         selected_rows.iloc[0]["URL"], selected_rows.iloc[0]["dataset_id"])
@@ -210,7 +201,7 @@ with st.sidebar:
 
 failure_msg = "The requested dataset information cannot be loaded due to an error. The error is likely caused by "+\
                 "an error with the police department or agency site that the data is sourced from. " +\
-                "If this error is with the agency's site, you can still access other datasets from OPD Explorer.\n\n" + \
+                "If this error is with the agency's site; you can still access other datasets from OPD Explorer.\n\n" + \
                 "If you need to access to the currently selected dataset, please try again later or contact us on our " +\
                 "[discussion board](https://github.com/openpolicedata/openpolicedata/discussions) or by [email](mailto:openpolicedata@gmail.com)."
 if load_failure:
@@ -245,16 +236,15 @@ else:
         text+=f"**{idx}**: {ds[idx]}  \n"
     st.info(text)
 
-    new_selection = [selected_rows.iloc[0]["URL"], selected_rows.iloc[0]["dataset_id"]]
+    new_selection = [selected_rows.iloc[0]["URL"]]
+    if pd.notnull(selected_rows.iloc[0]["dataset_id"]):
+        new_selection.append(selected_rows.iloc[0]["dataset_id"])
     if st.session_state['last_selection'] != new_selection:
         # New selection. Delete previously downloaded data
         logger.debug("Resetting download button")
         st.session_state['csv_text_output'] = None
-        st.session_state['preview'] = None
+        st.session_state['preview'] = []
         st.session_state['last_selection'] = new_selection
-
-    collect_help = "This collects the data from the data source's URL. Upon completion, the data will be available for download "+\
-                   "using the *Download CSV button*. This may take some time."
 
     selection['agency'] = None
     agency_name = selected_rows.iloc[0]["Agency"]
@@ -265,56 +255,59 @@ else:
     if related_tables is not None:
         st.markdown(f'*Related tables*: {",".join(related_tables)}' )
 
-    with st.empty():
-        if not load_failure and st.session_state['preview'] is None and st.button('Retrieve Data', help=collect_help):
-            src = opd.Source(source_name=selectbox_sources, state=selectbox_states, agency=selected_agency)        
-            logger.info(f"Begininng data download from URL for {selectbox_sources=}, {selectbox_states=}, {selected_agency=}")
+    prev_disabled = load_failure and len(st.session_state['preview'])==0
+    download_disabled = load_failure
 
-            record_count = None
-            if selected_rows.iloc[0]["DataType"] in api_data_types:
-                msgs['wait'] = "Retrieving Data..."
-                with st.spinner("Retrieving record count..."):
-                    try:
-                        logger.info(f"Getting count for {selection['year']=}, {selection['table']=}, {selection['agency']=}, "+\
-                                    f'{selected_rows.iloc[0]["URL"]=}, {selected_rows.iloc[0]["dataset_id"]=}')
-                        record_count = src.get_count(year=selection['year'], table_type=selection['table'], agency=selection['agency'],
-                                                     url=selected_rows.iloc[0]["URL"], 
-                                                     id=selected_rows.iloc[0]["dataset_id"])
-                        logger.info(f"record_count: {record_count}")
-                    except Exception as e:
-                        logger.exception('Exception encountered during get_count', exc_info=e)
-                        load_failure = True
-            else:
-                msgs['wait'] = "Retrieving Data... (Large datasets may take time to retrieve)"
+    no_data_msg = f"No data found for the {selection['table']} table for {selectbox_sources} in {selection['year']}"
+    if selection['agency'] is not None:
+        no_data_msg = f"{no_data_msg} when filtering for agency {selection['agency']}"
 
-            msgs['no_data'] = f"No data found for the {selection['table']} table for {selectbox_sources} in {selection['year']}"
-            if selection['agency'] is not None:
-                msgs['no_data'] = f"{msgs['no_data']} when filtering for agency {selection['agency']}"
+    can_load_partial = utils.test_partial_load(selected_rows)
+    if not can_load_partial:
+        st.caption('Partial load of this dataset is not possible so previewing data will load entire dataset. User may want to just download the data to view contents.')
 
-            if not load_failure:
-                data_as_csv_txt, nrows, df_prev, load_failure = dashboard_utils.load(src, selection, selected_rows, record_count, msgs)
+    col0, col3 = st.columns(2, width=500, vertical_alignment='center', gap='large')
+    st.markdown("**NOTE**: Download from source website may be slow. User can continue using the dashboard while data downloads in background.")
 
+    box = col0.columns(1, border=True)
+    col1, col2 = box[0].columns(2, vertical_alignment='bottom')
+
+    with col1:
+        nrows = st.number_input('Preview Rows', min_value=1, value=20, format="%d")
+
+    if col2.button('Preview', disabled=prev_disabled):
+        with st.empty(): # This is used to replace the spinner after it is no longer needed
+            st.session_state['csv_text_output'], st.session_state['preview'], load_failure = dashboard_utils.load(selected_rows, selection, nrows)
+
+            # Log and replace spinner
             if load_failure:
                 st.error(failure_msg)
-            elif nrows>0:
-                logger.info(f"Data downloaded from URL. Total of {nrows} rows")
-                st.session_state['preview'] = df_prev
-                st.session_state["record_count"] = nrows
-                st.session_state['csv_text_output'] = data_as_csv_txt
+            elif len(st.session_state['preview'])>0:
+                logger.info(f"Data downloaded from URL. Total of {len(st.session_state['preview'])} rows")
             else:
-                st.write(msgs['no_data'])
+                st.text(no_data_msg)
                 logger.info("No data found")
 
-        if st.session_state['preview'] is not None:
-            # Replace progress bar with number of records
-            st.markdown(f'*Total Number of Records*: {st.session_state["record_count"]}' )
-
-    if st.session_state['preview'] is not None:
-        csv_filename = opd.data.get_csv_filename(selected_rows.iloc[0]["State"], selected_rows.iloc[0]["SourceName"], 
+    csv_filename = opd.data.get_csv_filename(selected_rows.iloc[0]["State"], selected_rows.iloc[0]["SourceName"], 
                                                 agency_name , selected_rows.iloc[0]["TableType"], orig_year if load_file else selection['year'])
-        if st.download_button('Download CSV', data=st.session_state['csv_text_output'] , file_name=csv_filename, mime='text/csv'):
-            logger.info('Download complete!!!!!')
+    
+    csv_text_output = st.session_state['csv_text_output']
+    def download():
+        if not csv_text_output:
+            csv_data, _, load_failure = dashboard_utils.load(selected_rows, selection, logger=logger, use_streamlit=False)
+            if load_failure:
+                raise ValueError(failure_msg)
+        else:
+            csv_data = csv_text_output
+            logger.info(f"Downloading previewed data : {selected_rows.iloc[0]['URL']}, {selected_rows.iloc[0]['dataset_id']}, "+\
+                        f'{selected_rows.iloc[0]["SourceName"]}, {selected_rows.iloc[0]["State"]}, {selected_rows.iloc[0]["Agency"]}')
 
+        logger.info('Download complete!!!!!')
+        return csv_data
+    
+    col3.download_button('Download CSV', data=download , file_name=csv_filename, mime='text/csv')
+
+    if len(st.session_state['preview'])>0:
         st.divider()
         st.subheader("Preview")
         st.dataframe(data=st.session_state['preview'])

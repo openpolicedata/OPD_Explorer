@@ -1,5 +1,5 @@
 openpolicedata[optional] >= 0.12.0
 packaging
-pandas
-# 1.22.0 fails sas of 4/28/2025
-streamlit >= 1.51.0
+pandas<3.0
+# 1.52 allows callable to be passed to download button
+streamlit >= 1.52.0
