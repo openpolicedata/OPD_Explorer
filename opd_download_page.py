@@ -72,7 +72,7 @@ if st.session_state['is_starting_up'] and len(query)>0:
         if k in st.session_state['default'][key]:
             st.session_state['default'][key][k] = v
         elif k=='table' and 'table_type_general' in st.session_state['default'][key]: # Handle shorthand
-            st.session_state['default'][key]['table_type_general'] = v
+            st.session_state['default'][key]['table_type_general'] = v.upper()
 
 pg.run()
 
