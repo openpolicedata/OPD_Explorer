@@ -26,14 +26,16 @@ def init(level, __version__):
 
         st.session_state['logger'].debug("***********DEBUG MODE*************")
 
-        st.session_state['logger'].info(datetime.now(timezone.utc))
+        if st.context.url!=None:
+            st.session_state['logger'].info(datetime.now(timezone.utc))
         display_version(opd.__version__, __version__, st.__version__)
 
-        st.session_state['logger'].info('USER INFO')
-        st.session_state['logger'].info(f'\tURL: {st.context.url}')
-        st.session_state['logger'].info(f'\tLocale: {st.context.locale}')
-        st.session_state['logger'].info(f'\tUser Timezone: {st.context.timezone}')
-        st.session_state['logger'].info(f'\tUser Timezone Offset: {st.context.timezone_offset}')
+        if st.context.url!=None:
+            st.session_state['logger'].info('USER INFO')
+            st.session_state['logger'].info(f'\tURL: {st.context.url}')
+            st.session_state['logger'].info(f'\tLocale: {st.context.locale}')
+            st.session_state['logger'].info(f'\tUser Timezone: {st.context.timezone}')
+            st.session_state['logger'].info(f'\tUser Timezone Offset: {st.context.timezone_offset}')
 
 
 def clear_defaults(page, start):
