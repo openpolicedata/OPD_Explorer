@@ -5,18 +5,10 @@ import openpolicedata as opd
 
 @st.cache_data()
 def display_version(opd_version, exp_version, st_version):
-    now = datetime.now(timezone.utc)
-
-    st.session_state['logger'].info(now)
     st.session_state['logger'].info("VERSIONS:")
     st.session_state['logger'].info(f"\tOpenPoliceData: {opd_version}")
     st.session_state['logger'].info(f"\tOPD Explorer: {exp_version}")
     st.session_state['logger'].info(f"\tStreamlit: {st_version}")  # 4/28/2025: Working ver =  1.44.1
-    st.session_state['logger'].info(f'URL: {st.context.url}')
-    st.session_state['logger'].info(f'IP: {st.context.ip_address}')
-    st.session_state['logger'].info(f'Locale: {st.context.locale}')
-    st.session_state['logger'].info(f'User Timezone: {st.context.timezone}')
-    st.session_state['logger'].info(f'User Timezone Offset: {st.context.timezone_offset}')
 
 
 def init(level, __version__):
@@ -34,7 +26,14 @@ def init(level, __version__):
 
         st.session_state['logger'].debug("***********DEBUG MODE*************")
 
+        st.session_state['logger'].info(datetime.now(timezone.utc))
         display_version(opd.__version__, __version__, st.__version__)
+
+        st.session_state['logger'].info('USER INFO')
+        st.session_state['logger'].info(f'\tURL: {st.context.url}')
+        st.session_state['logger'].info(f'\tLocale: {st.context.locale}')
+        st.session_state['logger'].info(f'\tUser Timezone: {st.context.timezone}')
+        st.session_state['logger'].info(f'\tUser Timezone Offset: {st.context.timezone_offset}')
 
 
 def clear_defaults(page, start):
