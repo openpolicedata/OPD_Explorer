@@ -8,7 +8,7 @@ API_DATA_TYPES = ["ArcGIS",'Carto','CKAN','Socrata','Opendatasoft']
 
 def get_default(vals, default_val, required=True):
     if default_val!=0:
-        default_val_index = [k for k,x in enumerate(vals) if x==default_val]
+        default_val_index = [k for k,x in enumerate(vals) if x.lower()==default_val.lower()]
         if len(default_val_index)>0:
             default_val_index = default_val_index[0]
         elif required:
