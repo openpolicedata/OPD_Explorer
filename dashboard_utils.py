@@ -83,7 +83,7 @@ def load(selected_row, selection, prev_rows=None, logger=None, use_streamlit=Tru
         nrows = prev_rows
 
         if load_all:
-            wait_msg = "Entire dataset must be loaded to generate preview"
+            wait_msg = "Entire dataset must be loaded to generate preview. This may be slow."
         else:
             wait_msg = f"Retrieving up to {nrows} rows..."
 

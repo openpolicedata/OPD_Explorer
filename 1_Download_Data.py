@@ -110,7 +110,7 @@ with st.sidebar:
     try:
         years = dashboard_utils.get_years(selectbox_sources, selectbox_states, selection['table'], selected_agency)
     except:
-        logger.exception('')
+        logger.exception(f"Failed to get years for {selectbox_sources=}, {selectbox_states=}, {selection['table']=}, {selected_agency=}")
         load_failure = True
 
     if not load_failure:
