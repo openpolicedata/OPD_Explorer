@@ -48,9 +48,10 @@ def get_data_catalog():
 
 with st.sidebar:
     st.title('OpenPoliceData Explorer')
-    st.caption("Explorer uses the [OpenPoliceData](https://openpolicedata.readthedocs.io/en/stable/documentation.html) Python library to access over 500 "+
+    st.caption("Explorer uses the [OpenPoliceData](https://openpolicedata.readthedocs.io/en/stable/documentation.html) Python library to access over 550 "+
             "incident-level datasets from police departments around the United States "+
-            "including traffic stops, use of force, and officer-involved shootings data.")
+            "including traffic stops, use of force, and officer-involved shootings data. See the "+
+            "[Python library](https://openpolicedata.readthedocs.io/en/stable/documentation.html) to access data programmatically.")
 
 st.session_state['data_catalog'] = get_data_catalog()
 
