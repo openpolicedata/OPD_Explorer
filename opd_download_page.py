@@ -50,7 +50,7 @@ with st.sidebar:
     st.title('OpenPoliceData Explorer')
     st.caption("Access over 550 "+
             "incident-level datasets from police departments around the United States "+
-            "including traffic stops, use of force, and officer-involved shootings data. See the "+
+            "including traffic stops, use of force, and officer-involved shootings. See the "+
             "[OpenPoliceData Python library](https://openpolicedata.readthedocs.io/en/stable/documentation.html) to access data programmatically.")
 
 st.session_state['data_catalog'] = get_data_catalog()
