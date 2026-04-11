@@ -38,7 +38,7 @@ def load(selected_row, selection, prev_rows=None, logger=None, use_streamlit=Tru
     is_csv = ds['DataType']=='CSV'
     is_zipped = ds['URL'].endswith('.zip')
 
-    logger.info(f"Loading {'preview ' if prev_rows else ''}data for for {selection['year']}, {selection['table']}, {selection['agency']}, "+\
+    logger.info(f"Loading {'preview ' if prev_rows else ''}data for {selection['year']}, {selection['table']}, {selection['agency']}, "+\
                                     f'{ds["URL"]}, {ds["dataset_id"]}, {ds["SourceName"]}, {ds["State"]}, {ds["Agency"]}')
 
     src = opd.Source(source_name=ds['SourceName'], state=ds['State'], agency=ds['Agency'])
