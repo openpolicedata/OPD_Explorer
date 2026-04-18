@@ -1,6 +1,8 @@
 import pandas as pd
 import numpy as np
 import json
+from packaging import version
+import openpolicedata as opd
 
 def check_last_selection(app, url, id):
     assert app.session_state['last_selection'][0]==url
@@ -30,6 +32,11 @@ def get_year_filter(app):
 def match_dataframes(df_true, df_app):
     if 'dataset_id' in df_app:
         df_app['dataset_id'] = df_app['dataset_id'].apply(lambda x: np.nan if x=='nan' else x)
+
+    # Remove datasets not available in this version. Dashboard does this internally.
+    df_true = df_true[df_true["min_version"].apply(lambda x: 
+        pd.isnull(x) or (x.strip()!="-1" and version.parse(opd.__version__) >= version.parse(x))
+        )]
     
     df_app = df_app.convert_dtypes()
     df_true = df_true.convert_dtypes()

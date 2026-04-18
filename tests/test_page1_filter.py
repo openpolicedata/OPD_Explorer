@@ -20,10 +20,10 @@ def ensure_correct_page(app):
 
 
 def test_basic_multiyear_file(app):
-    state = 'Colorado'
-    src = 'Denver'
-    tbl = 'OFFICER-INVOLVED SHOOTINGS'
-    url = 'https://raw.githubusercontent.com/openpolicedata/opd-datasets/main/data/Colorado_Denver_OFFICER-INVOLVED_SHOOTINGS.csv'
+    state = 'Arizona'
+    src = 'Chandler'
+    tbl = 'ARRESTS'
+    url = 'https://data.chandlerpd.com/catalog/arrest-bookings/download/csv/'
     id = pd.NA
 
     df = opd.datasets.query(state=state, source_name=src, table_type=tbl)
