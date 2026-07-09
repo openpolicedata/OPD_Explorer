@@ -1,3 +1,6 @@
 .streamlit
 .vscode
 *.pyc
+
+secrets.toml
+keys/

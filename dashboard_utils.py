@@ -99,7 +99,7 @@ def load(selected_row, selection, prev_rows=None, logger=None, use_streamlit=Tru
                     isempty = nrows_load==0
                 else:
                     nrows_load = None if load_all else nrows
-                    data_from_url = src.load(year=selection['year'], table_type=selection['table'], agency=selection['agency'],
+                    data_from_url = src.load(date=selection['year'], table_type=selection['table'], agency=selection['agency'],
                                                 url=ds["URL"], 
                                                 id=ds["dataset_id"],
                                                 verbose=False,
