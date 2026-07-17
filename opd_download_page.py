@@ -78,7 +78,7 @@ if st.session_state['is_starting_up'] and len(query)>0:
 pg.run()
 
 st.info("Questions or Suggestions? Please reach out to us on our "
-            "[discussion board](https://github.com/openpolicedata/openpolicedata/discussions) or by [email](openpolicedata@gmail.com).\n\n"+
+            "[discussion board](https://github.com/openpolicedata/openpolicedata/discussions) or by [email](mailto:openpolicedata@gmail.com).\n\n"+
             "NOTE: Check the data dictionary and "+
             "source URLs for more information on the data. If you still are having issues, feel free to reach out to us at the link above.")
 
